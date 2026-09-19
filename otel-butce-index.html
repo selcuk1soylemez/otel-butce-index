@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profesyonel Otel Bütçe ve Kârlılık Simülatörü</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --success: #16a34a;
+            --danger: #dc2626;
+            --warning: #d97706;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+            --border: #cbd5e1;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            color: var(--primary-dark);
+            margin-bottom: 5px;
+        }
+        p.subtitle {
+            text-align: center;
+            color: #64748b;
+            margin-top: 0;
+            margin-bottom: 30px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        @media (max-width: 768px) {
+            .grid { grid-template-columns: 1fr; }
+        }
+        .card {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            margin-bottom: 20px;
+        }
+        .card h2 {
+            margin-top: 0;
+            font-size: 1.25rem;
+            border-bottom: 2px solid var(--bg);
+            padding-bottom: 10px;
+            color: var(--primary);
+        }
+        .card h2.target-title {
+            color: var(--warning);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+        .target-box {
+            background-color: #fffbeb;
+            border: 1px solid #fde68a;
+        }
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        .results-table th, .results-table td {
+            padding: 10px 12px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 0.95rem;
+        }
+        .results-table td:nth-child(2) {
+            text-align: right;
+            font-weight: 600;
+        }
+        .highlight-row {
+            background-color: #f1f5f9;
+            font-weight: bold;
+        }
+        .target-row {
+            background-color: #fef3c7;
+            font-weight: bold;
+            color: #b45309;
+        }
+        .profit-positive {
+            color: var(--success);
+        }
+        .profit-negative {
+            color: var(--danger);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Otel Bütçe ve Kârlılık Simülatörü</h1>
+    <p class="subtitle">Amortisman ve Hedef Odaklı Gelişmiş Finansal Analiz Aracı</p>
+
+    <div class="grid">
+        <!-- SOL PANEL: PARAMETRELER -->
+        <div>
+            <div class="card target-box">
+                <h2 class="target-title">🎯 Hedeflenen Finansal Performans</h2>
+                <div class="form-group">
+                    <label for="targetNetProfit">Sezon Sonu Hedeflenen Net Kâr (€)</label>
+                    <input type="number" id="targetNetProfit" value="30000" min="0" step="1000" oninput="calculate()">
+                    <small style="color: #64748b; font-size: 0.8rem;">Bu net kârı elde etmek için gereken minimum fiyat yan tarafta hesaplanır.</small>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>1. Kapasite ve Sezon Bilgileri</h2>
+                <div class="form-group">
+                    <label for="rooms">Toplam Oda Sayısı</label>
+                    <input type="number" id="rooms" value="40" min="1" oninput="calculate()">
+                </div>
+                <div class="form-group">
+                    <label for="days">Sezon Gün Sayısı (Örn: 5 ay = 150 gün)</label>
+                    <input type="number" id="days" value="150" min="1" oninput="calculate()">
+                </div>
+                <div class="form-group">
+                    <label for="occupancy">Hedeflenen Doluluk Oranı (%)</label>
+                    <input type="number" id="occupancy" value="70" min="1" max="100" oninput="calculate()">
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>2. Konsept ve Fiyatlandırma</h2>
+                <div class="form-group">
+                    <label for="concept">Otel Konsepti</label>
+                    <select id="concept" onchange="calculate()">
+                        <option value="AI">Her Şey Dahil (All-Inclusive)</option>
+                        <option value="FB">Tam Pansiyon (Full Board)</option>
+                        <option value="HB" selected>Yarım Pansiyon (Half Board)</option>
+                        <option value="BB">Oda - Kahvaltı (Bed & Breakfast)</option>
+                        <option value="RO">Sadece Oda (Room Only)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="adr">Mevcut / Test Edilen Günlük Oda Fiyatı (ADR - €)</label>
+                    <input type="number" id="adr" value="120" min="0" oninput="calculate()">
+                </div>
+                <div class="form-group">
+                    <label for="extraSpend">Kişibaşı Günlük Ekstra Harcama (Bar/Spa/Ek - €)</label>
+                    <input type="number" id="extraSpend" value="15" min="0" oninput="calculate()">
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>3. Maliyet ve Gider Parametreleri</h2>
+                <div class="form-group">
+                    <label for="staffCount">Toplam Personel Sayısı</label>
+                    <input type="number" id="staffCount" value="12" min="1" oninput="calculate()">
+                </div>
+                <div class="form-group">
+                    <label for="staffCost">Personel Başına Aylık Giydirilmiş Maliyet (€)</label>
+                    <input type="number" id="staffCost" value="900" min="0" oninput="calculate()">
+                </div>
+                <div class="form-group">
+                    <label for="fbCostPerPerson">Kişibaşı Günlük Yiyecek/İçecek Hammadde Maliyeti (€)</label>
+                    <input type="number" id="fbCostPerPerson" value="12" min="0" oninput="calculate()">
+                </div>
+                <div class="form-group">
+                    <label for="roomVarCost">Oda Başına Günlük Temizlik/Enerji/Sarf Maliyeti (€)</label>
+                    <input type="number" id="roomVarCost" value="8" min="0" oninput="calculate()">
+                </div>
+                <div class="form-group">
+                    <label for="fixedCost">Aylık Sabit Genel Giderler (Kira, Bakım, Lisans vb. - €)</label>
+                    <input type="number" id="fixedCost" value="10000" min="0" oninput="calculate()">
+                </div>
+                <div class="form-group">
+                    <label for="totalInvestment">Toplam Otel / Demirbaş Yatırım Değeri (€)</label>
+                    <input type="number" id="totalInvestment" value="200000" min="0" oninput="calculate()">
+                </div>
+                <div class="form-group">
+                    <label for="depreciationRate">Yıllık Amortisman / Eskime Payı Oranı (%)</label>
+                    <input type="number" id="depreciationRate" value="12" min="0" max="100" oninput="calculate()">
+                    <small style="color: #64748b; font-size: 0.8rem;">Sezon oranına göre otomatik dönemselleştirilir.</small>
+                </div>
+                <div class="form-group">
+                    <label for="taxRate">Kurumlar Vergisi Oranı (%)</label>
+                    <input type="number" id="taxRate" value="25" min="0" max="100" oninput="calculate()">
+                </div>
+            </div>
+        </div>
+
+        <!-- SAĞ PANEL: SONUÇLAR VE ANALİZ -->
+        <div>
+            <div class="card" style="position: sticky; top: 20px;">
+                <h2>Sezonluk Finansal Özet ve Hedef Analizi</h2>
+                <table class="results-table">
+                    <tr>
+                        <td>Toplam Satılabilir Oda Geceleme</td>
+                        <td id="resTotalNights">0</td>
+                    </tr>
+                    <tr>
+                        <td>Gerçekleşen Konaklayan Geceleme (Doluluk ile)</td>
+                        <td id="resOccupiedNights">0</td>
+                    </tr>
+                    <tr>
+                        <td>Toplam Oda Geliri (Mevcut Fiyatla)</td>
+                        <td id="resRoomRevenue">€ 0</td>
+                    </tr>
+                    <tr>
+                        <td>Toplam Ekstra Gelirler</td>
+                        <td id="resExtraRevenue">€ 0</td>
+                    </tr>
+                    <tr class="highlight-row">
+                        <td>Toplam Brüt Ciro</td>
+                        <td id="resTotalRevenue">€ 0</td>
+                    </tr>
+                    <tr>
+                        <td>Toplam Personel Maliyeti</td>
+                        <td id="resStaffExpense">€ 0</td>
+                    </tr>
+                    <tr>
+                        <td>Toplam Yiyecek & İçecek (F&B) Maliyeti</td>
+                        <td id="resFbExpense">€ 0</td>
+                    </tr>
+                    <tr>
+                        <td>Oda Bazlı Değişken Maliyetler</td>
+                        <td id="resVarExpense">€ 0</td>
+                    </tr>
+                    <tr>
+                        <td>Toplam Sabit Giderler (Sezon Boyunca)</td>
+                        <td id="resFixedExpense">€ 0</td>
+                    </tr>
+                    <tr>
+                        <td>Sezonluk Amortisman (Eskime Payı) Gideri</td>
+                        <td id="resDepreciationExpense">€ 0</td>
+                    </tr>
+                    <tr class="highlight-row">
+                        <td>Toplam İşletme Maliyeti (OPEX + Amortisman)</td>
+                        <td id="resTotalExpense">€ 0</td>
+                    </tr>
+                    <tr class="highlight-row" style="font-size: 1.05rem;">
+                        <td>Vergi Öncesi Kâr / (Zarar)</td>
+                        <td id="resPreTaxProfit">€ 0</td>
+                    </tr>
+                    <tr>
+                        <td>Kurumlar Vergisi Tutarı</td>
+                        <td id="resTaxAmount">€ 0</td>
+                    </tr>
+                    <tr class="highlight-row" style="font-size: 1.15rem;">
+                        <td>Sezon Sonu Net Kâr / (Zarar) (Mevcut Durum)</td>
+                        <td id="resNetProfit">€ 0</td>
+                    </tr>
+                    <tr class="target-row" style="font-size: 1.15rem;">
+                        <td>🎯 Hedef Kârı Tutturmak İçin Gereken Oda Fiyatı (ADR)</td>
+                        <td id="resTargetAdr">€ 0</td>
+                    </tr>
+                    <tr>
+                        <td>Başabaş Doluluk Oranı (Breakeven)</td>
+                        <td id="resBreakevenOcc">-%</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function calculate() {
+    // Girdileri al
+    const targetNetProfit = parseFloat(document.getElementById('targetNetProfit').value) || 0;
+    const rooms = parseFloat(document.getElementById('rooms').value) || 0;
+    const days = parseFloat(document.getElementById('days').value) || 0;
+    const targetOccupancy = parseFloat(document.getElementById('occupancy').value) || 0;
+    const adr = parseFloat(document.getElementById('adr').value) || 0;
+    const extraSpend = parseFloat(document.getElementById('extraSpend').value) || 0;
+    
+    const staffCount = parseFloat(document.getElementById('staffCount').value) || 0;
+    const staffCostMonthly = parseFloat(document.getElementById('staffCost').value) || 0;
+    const fbCostPerPerson = parseFloat(document.getElementById('fbCostPerPerson').value) || 0;
+    const roomVarCost = parseFloat(document.getElementById('roomVarCost').value) || 0;
+    const monthlyFixedCost = parseFloat(document.getElementById('fixedCost').value) || 0;
+    
+    const totalInvestment = parseFloat(document.getElementById('totalInvestment').value) || 0;
+    const annualDepreciationRate = parseFloat(document.getElementById('depreciationRate').value) || 0;
+    const taxRate = parseFloat(document.getElementById('taxRate').value) || 0;
+
+    const seasonMonths = days / 30;
+
+    // Temel Geceleme Hesapları
+    const totalPossibleNights = rooms * days;
+    const occupiedNights = Math.round(totalPossibleNights * (targetOccupancy / 100));
+    const totalGuests = occupiedNights * 2; // Oda başı ortalama 2 misafir varsayımı
+
+    // Maliyetler
+    const totalStaffExpense = staffCount * staffCostMonthly * seasonMonths;
+    const totalFbExpense = totalGuests * fbCostPerPerson;
+    const totalVarExpense = occupiedNights * roomVarCost;
+    const totalFixedExpense = monthlyFixedCost * seasonMonths;
+    
+    // Amortisman Hesaplama (Yıllık amortismanın sezona denk gelen oransal payı: Sezon Ayı / 12)
+    const annualDepreciation = totalInvestment * (annualDepreciationRate / 100);
+    const seasonDepreciationExpense = annualDepreciation * (seasonMonths / 12);
+
+    const totalExpense = totalStaffExpense + totalFbExpense + totalVarExpense + totalFixedExpense + seasonDepreciationExpense;
+
+    // Mevcut Durum Gelir ve Kârları
+    const roomRevenue = occupiedNights * adr;
+    const extraRevenue = totalGuests * extraSpend;
+    const totalRevenue = roomRevenue + extraRevenue;
+
+    const preTaxProfit = totalRevenue - totalExpense;
+    const taxAmount = preTaxProfit > 0 ? preTaxProfit * (taxRate / 100) : 0;
+    const netProfit = preTaxProfit - taxAmount;
+
+    // HEDEF KÂR İÇİN TERSİNE MÜHENDİSLİK (Goal Seek)
+    const requiredPreTaxProfit = taxRate < 100 ? targetNetProfit / (1 - (taxRate / 100)) : targetNetProfit;
+    const requiredTotalRevenue = totalExpense + requiredPreTaxProfit;
+    const requiredRoomRevenue = requiredTotalRevenue - extraRevenue;
+    
+    let requiredAdr = 0;
+    if (occupiedNights > 0) {
+        requiredAdr = requiredRoomRevenue / occupiedNights;
+        if (requiredAdr < 0) requiredAdr = 0;
+    }
+
+    // Başabaş Doluluk Oranı Hesaplama
+    const variableCostPerNight = (totalFbExpense + totalVarExpense) / (occupiedNights || 1);
+    const marginalContributionPerNight = adr + (extraSpend * 2) - variableCostPerNight;
+    
+    let breakevenOcc = 0;
+    const totalFixedAndStaffAndDepr = totalStaffExpense + totalFixedExpense + seasonDepreciationExpense;
+    if (marginalContributionPerNight > 0) {
+        const requiredNightsForBreakeven = totalFixedAndStaffAndDepr / marginalContributionPerNight;
+        breakevenOcc = (requiredNightsForBreakeven / totalPossibleNights) * 100;
+        if (breakevenOcc > 100) breakevenOcc = 100;
+        if (breakevenOcc < 0) breakevenOcc = 0;
+    } else {
+        breakevenOcc = 100;
+    }
+
+    // Sonuçları HTML'e yazdır
+    document.getElementById('resTotalNights').innerText = totalPossibleNights.toLocaleString('tr-TR');
+    document.getElementById('resOccupiedNights').innerText = occupiedNights.toLocaleString('tr-TR') + ` (%${targetOccupancy})`;
+    document.getElementById('resRoomRevenue').innerText = '€ ' + roomRevenue.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    document.getElementById('resExtraRevenue').innerText = '€ ' + extraRevenue.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    document.getElementById('resTotalRevenue').innerText = '€ ' + totalRevenue.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+
+    document.getElementById('resStaffExpense').innerText = '€ ' + totalStaffExpense.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    document.getElementById('resFbExpense').innerText = '€ ' + totalFbExpense.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    document.getElementById('resVarExpense').innerText = '€ ' + totalVarExpense.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    document.getElementById('resFixedExpense').innerText = '€ ' + totalFixedExpense.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    document.getElementById('resDepreciationExpense').innerText = '€ ' + seasonDepreciationExpense.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    document.getElementById('resTotalExpense').innerText = '€ ' + totalExpense.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+
+    const preTaxElem = document.getElementById('resPreTaxProfit');
+    preTaxElem.innerText = '€ ' + preTaxProfit.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    preTaxElem.className = preTaxProfit >= 0 ? 'profit-positive' : 'profit-negative';
+
+    document.getElementById('resTaxAmount').innerText = '€ ' + taxAmount.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+
+    const netElem = document.getElementById('resNetProfit');
+    netElem.innerText = '€ ' + netProfit.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    netElem.className = netElem.className.replace(/profit-(positive|negative)/, '') + (netProfit >= 0 ? ' profit-positive' : ' profit-negative');
+
+    document.getElementById('resTargetAdr').innerText = '€ ' + requiredAdr.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    document.getElementById('resBreakevenOcc').innerText = '%' + breakevenOcc.toFixed(1);
+}
+
+window.onload = calculate;
+</script>
+
+</body>
+</html>
