@@ -85,10 +85,50 @@
             border-color: var(--primary);
             box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
         }
+        input[readonly] {
+            background-color: #f1f5f9;
+            color: #64748b;
+            cursor: not-allowed;
+        }
         .target-box {
             background-color: #fffbeb;
             border: 1px solid #fde68a;
         }
+        
+        /* +/- Butonlu Input Grubu */
+        .input-group {
+            display: flex;
+            align-items: stretch;
+            width: 100%;
+        }
+        .input-group button {
+            width: 45px;
+            background: #e2e8f0;
+            border: 1px solid var(--border);
+            font-size: 1.3rem;
+            font-weight: bold;
+            cursor: pointer;
+            color: var(--text);
+            transition: background 0.15s;
+        }
+        .input-group button:hover {
+            background: #cbd5e1;
+        }
+        .input-group button:first-child {
+            border-radius: 6px 0 0 6px;
+            border-right: none;
+        }
+        .input-group button:last-child {
+            border-radius: 0 6px 6px 0;
+            border-left: none;
+        }
+        .input-group input {
+            border-radius: 0;
+            text-align: center;
+            flex: 1;
+            font-weight: 600;
+        }
+        
         .results-table {
             width: 100%;
             border-collapse: collapse;
@@ -119,6 +159,100 @@
         .profit-negative {
             color: var(--danger);
         }
+        
+        /* Sezon Satırları */
+        .season-row {
+            display: grid;
+            grid-template-columns: 1.1fr 1.1fr 0.7fr 0.9fr 1.1fr 1fr auto;
+            gap: 8px;
+            margin-bottom: 10px;
+            align-items: end;
+            padding-bottom: 10px;
+            border-bottom: 1px dashed var(--border);
+        }
+        .season-row input {
+            padding: 8px;
+            font-size: 0.85rem;
+        }
+        .season-row label {
+            font-size: 0.7rem;
+            color: #64748b;
+            margin-bottom: 3px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        /* Oda Tipi Satırları */
+        .room-type-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr auto;
+            gap: 8px;
+            margin-bottom: 10px;
+            align-items: end;
+            padding-bottom: 10px;
+            border-bottom: 1px dashed var(--border);
+        }
+        .room-type-row input {
+            padding: 8px;
+            font-size: 0.9rem;
+        }
+        .room-type-row label {
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-bottom: 3px;
+        }
+        
+        .total-rooms-display {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 15px;
+            text-align: center;
+            font-weight: bold;
+            color: var(--primary-dark);
+        }
+        .total-rooms-display span {
+            font-size: 1.3rem;
+        }
+        
+        .btn-add-season {
+            width: 100%;
+            padding: 10px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 10px;
+            transition: background 0.2s;
+        }
+        .btn-add-season:hover {
+            background-color: var(--primary-dark);
+        }
+        .btn-remove-season {
+            background-color: var(--danger);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 10px;
+            cursor: pointer;
+            height: 36px;
+            font-weight: bold;
+        }
+        @media (max-width: 1100px) {
+            .season-row {
+                grid-template-columns: 1fr 1fr;
+                background: #f8fafc;
+                padding: 10px;
+                border-radius: 6px;
+            }
+            .season-row > div:nth-child(3) {
+                grid-column: span 2;
+            }
+        }
     </style>
 </head>
 <body>
@@ -135,29 +269,47 @@
                 <div class="form-group">
                     <label for="targetNetProfit">Sezon Sonu Hedeflenen Net Kâr (€)</label>
                     <input type="number" id="targetNetProfit" value="30000" min="0" step="1000" oninput="calculate()">
-                    <small style="color: #64748b; font-size: 0.8rem;">Bu net kârı elde etmek için gereken minimum fiyat yan tarafta hesaplanır.</small>
+                    <small style="color: #64748b; font-size: 0.8rem;">Bu net kârı elde etmek için gereken minimum ortalama fiyat yan tarafta hesaplanır.</small>
                 </div>
             </div>
 
             <div class="card">
-                <h2>1. Kapasite ve Sezon Bilgileri</h2>
+                <h2>1. Kapasite ve Misafir Bilgileri</h2>
                 <div class="form-group">
-                    <label for="rooms">Toplam Oda Sayısı</label>
-                    <input type="number" id="rooms" value="40" min="1" oninput="calculate()">
+                    <label for="avgGuests">Ortalama Oda Başına Misafir Sayısı</label>
+                    <div class="input-group">
+                        <button type="button" onclick="decrementGuests()" title="Azalt">−</button>
+                        <input type="text" id="avgGuests" value="2" oninput="calculate()" inputmode="decimal">
+                        <button type="button" onclick="incrementGuests()" title="Artır">+</button>
+                    </div>
+                    <small style="color: #64748b; font-size: 0.8rem;">Ondalıklı girebilirsiniz (Örn: 2,7 veya 2.7). Butonlar 0,1 artırıp azaltır.</small>
                 </div>
                 <div class="form-group">
-                    <label for="days">Sezon Gün Sayısı (Örn: 5 ay = 150 gün)</label>
-                    <input type="number" id="days" value="150" min="1" oninput="calculate()">
-                </div>
-                <div class="form-group">
-                    <label for="occupancy">Hedeflenen Doluluk Oranı (%)</label>
-                    <input type="number" id="occupancy" value="70" min="1" max="100" oninput="calculate()">
+                    <label for="staffCost">Personel Başına Aylık Ortalama Giydirilmiş Maliyet (€)</label>
+                    <input type="number" id="staffCost" value="1200" min="0" oninput="calculate()">
                 </div>
             </div>
 
             <div class="card">
-                <h2>2. Konsept ve Fiyatlandırma</h2>
-                <div class="form-group">
+                <h2>2. Oda Tipleri</h2>
+                <div id="room-types-container">
+                    <!-- Oda tipleri buraya JavaScript ile eklenecek -->
+                </div>
+                <button type="button" class="btn-add-season" onclick="addRoomType()">+ Yeni Oda Tipi Ekle</button>
+                
+                <div class="total-rooms-display">
+                    Toplam Oda Sayısı: <span id="totalRooms">0</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>3. Sezonlar, Fiyatlandırma ve Personel</h2>
+                <div id="seasons-container">
+                    <!-- Sezonlar buraya JavaScript ile eklenecek -->
+                </div>
+                <button type="button" class="btn-add-season" onclick="addSeason()">+ Yeni Sezon Ekle</button>
+                
+                <div class="form-group" style="margin-top: 20px;">
                     <label for="concept">Otel Konsepti</label>
                     <select id="concept" onchange="calculate()">
                         <option value="AI">Her Şey Dahil (All-Inclusive)</option>
@@ -168,25 +320,13 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="adr">Mevcut / Test Edilen Günlük Oda Fiyatı (ADR - €)</label>
-                    <input type="number" id="adr" value="120" min="0" oninput="calculate()">
-                </div>
-                <div class="form-group">
                     <label for="extraSpend">Kişibaşı Günlük Ekstra Harcama (Bar/Spa/Ek - €)</label>
                     <input type="number" id="extraSpend" value="15" min="0" oninput="calculate()">
                 </div>
             </div>
 
             <div class="card">
-                <h2>3. Maliyet ve Gider Parametreleri</h2>
-                <div class="form-group">
-                    <label for="staffCount">Toplam Personel Sayısı</label>
-                    <input type="number" id="staffCount" value="12" min="1" oninput="calculate()">
-                </div>
-                <div class="form-group">
-                    <label for="staffCost">Personel Başına Aylık Giydirilmiş Maliyet (€)</label>
-                    <input type="number" id="staffCost" value="900" min="0" oninput="calculate()">
-                </div>
+                <h2>4. Diğer Maliyet ve Gider Parametreleri</h2>
                 <div class="form-group">
                     <label for="fbCostPerPerson">Kişibaşı Günlük Yiyecek/İçecek Hammadde Maliyeti (€)</label>
                     <input type="number" id="fbCostPerPerson" value="12" min="0" oninput="calculate()">
@@ -206,7 +346,6 @@
                 <div class="form-group">
                     <label for="depreciationRate">Yıllık Amortisman / Eskime Payı Oranı (%)</label>
                     <input type="number" id="depreciationRate" value="12" min="0" max="100" oninput="calculate()">
-                    <small style="color: #64748b; font-size: 0.8rem;">Sezon oranına göre otomatik dönemselleştirilir.</small>
                 </div>
                 <div class="form-group">
                     <label for="taxRate">Kurumlar Vergisi Oranı (%)</label>
@@ -221,6 +360,10 @@
                 <h2>Sezonluk Finansal Özet ve Hedef Analizi</h2>
                 <table class="results-table">
                     <tr>
+                        <td>Toplam Oda Sayısı</td>
+                        <td id="resTotalRoomsDisplay">0</td>
+                    </tr>
+                    <tr>
                         <td>Toplam Satılabilir Oda Geceleme</td>
                         <td id="resTotalNights">0</td>
                     </tr>
@@ -229,7 +372,11 @@
                         <td id="resOccupiedNights">0</td>
                     </tr>
                     <tr>
-                        <td>Toplam Oda Geliri (Mevcut Fiyatla)</td>
+                        <td>Toplam Misafir Sayısı (Tahmini)</td>
+                        <td id="resTotalGuests">0</td>
+                    </tr>
+                    <tr>
+                        <td>Toplam Oda Geliri (Sezonlar Toplamı)</td>
                         <td id="resRoomRevenue">€ 0</td>
                     </tr>
                     <tr>
@@ -241,7 +388,7 @@
                         <td id="resTotalRevenue">€ 0</td>
                     </tr>
                     <tr>
-                        <td>Toplam Personel Maliyeti</td>
+                        <td>Toplam Personel Maliyeti (Sezonluk Dağılıma Göre)</td>
                         <td id="resStaffExpense">€ 0</td>
                     </tr>
                     <tr>
@@ -277,7 +424,7 @@
                         <td id="resNetProfit">€ 0</td>
                     </tr>
                     <tr class="target-row" style="font-size: 1.15rem;">
-                        <td>🎯 Hedef Kârı Tutturmak İçin Gereken Oda Fiyatı (ADR)</td>
+                        <td>🎯 Hedef Kâr İçin Gereken Ortalama Oda Fiyatı (ADR)</td>
                         <td id="resTargetAdr">€ 0</td>
                     </tr>
                     <tr>
@@ -291,108 +438,333 @@
 </div>
 
 <script>
-function calculate() {
-    // Girdileri al
-    const targetNetProfit = parseFloat(document.getElementById('targetNetProfit').value) || 0;
-    const rooms = parseFloat(document.getElementById('rooms').value) || 0;
-    const days = parseFloat(document.getElementById('days').value) || 0;
-    const targetOccupancy = parseFloat(document.getElementById('occupancy').value) || 0;
-    const adr = parseFloat(document.getElementById('adr').value) || 0;
-    const extraSpend = parseFloat(document.getElementById('extraSpend').value) || 0;
-    
-    const staffCount = parseFloat(document.getElementById('staffCount').value) || 0;
-    const staffCostMonthly = parseFloat(document.getElementById('staffCost').value) || 0;
-    const fbCostPerPerson = parseFloat(document.getElementById('fbCostPerPerson').value) || 0;
-    const roomVarCost = parseFloat(document.getElementById('roomVarCost').value) || 0;
-    const monthlyFixedCost = parseFloat(document.getElementById('fixedCost').value) || 0;
-    
-    const totalInvestment = parseFloat(document.getElementById('totalInvestment').value) || 0;
-    const annualDepreciationRate = parseFloat(document.getElementById('depreciationRate').value) || 0;
-    const taxRate = parseFloat(document.getElementById('taxRate').value) || 0;
-
-    const seasonMonths = days / 30;
-
-    // Temel Geceleme Hesapları
-    const totalPossibleNights = rooms * days;
-    const occupiedNights = Math.round(totalPossibleNights * (targetOccupancy / 100));
-    const totalGuests = occupiedNights * 2; // Oda başı ortalama 2 misafir varsayımı
-
-    // Maliyetler
-    const totalStaffExpense = staffCount * staffCostMonthly * seasonMonths;
-    const totalFbExpense = totalGuests * fbCostPerPerson;
-    const totalVarExpense = occupiedNights * roomVarCost;
-    const totalFixedExpense = monthlyFixedCost * seasonMonths;
-    
-    // Amortisman Hesaplama (Yıllık amortismanın sezona denk gelen oransal payı: Sezon Ayı / 12)
-    const annualDepreciation = totalInvestment * (annualDepreciationRate / 100);
-    const seasonDepreciationExpense = annualDepreciation * (seasonMonths / 12);
-
-    const totalExpense = totalStaffExpense + totalFbExpense + totalVarExpense + totalFixedExpense + seasonDepreciationExpense;
-
-    // Mevcut Durum Gelir ve Kârları
-    const roomRevenue = occupiedNights * adr;
-    const extraRevenue = totalGuests * extraSpend;
-    const totalRevenue = roomRevenue + extraRevenue;
-
-    const preTaxProfit = totalRevenue - totalExpense;
-    const taxAmount = preTaxProfit > 0 ? preTaxProfit * (taxRate / 100) : 0;
-    const netProfit = preTaxProfit - taxAmount;
-
-    // HEDEF KÂR İÇİN TERSİNE MÜHENDİSLİK (Goal Seek)
-    const requiredPreTaxProfit = taxRate < 100 ? targetNetProfit / (1 - (taxRate / 100)) : targetNetProfit;
-    const requiredTotalRevenue = totalExpense + requiredPreTaxProfit;
-    const requiredRoomRevenue = requiredTotalRevenue - extraRevenue;
-    
-    let requiredAdr = 0;
-    if (occupiedNights > 0) {
-        requiredAdr = requiredRoomRevenue / occupiedNights;
-        if (requiredAdr < 0) requiredAdr = 0;
+    // ============ SAYI PARSE FONKSİYONU (Virgül ve Nokta destekli) ============
+    function parseNum(val) {
+        if (typeof val === 'number') return val;
+        if (!val && val !== 0) return 0;
+        return parseFloat(String(val).replace(',', '.')) || 0;
     }
 
-    // Başabaş Doluluk Oranı Hesaplama
-    const variableCostPerNight = (totalFbExpense + totalVarExpense) / (occupiedNights || 1);
-    const marginalContributionPerNight = adr + (extraSpend * 2) - variableCostPerNight;
-    
-    let breakevenOcc = 0;
-    const totalFixedAndStaffAndDepr = totalStaffExpense + totalFixedExpense + seasonDepreciationExpense;
-    if (marginalContributionPerNight > 0) {
-        const requiredNightsForBreakeven = totalFixedAndStaffAndDepr / marginalContributionPerNight;
-        breakevenOcc = (requiredNightsForBreakeven / totalPossibleNights) * 100;
-        if (breakevenOcc > 100) breakevenOcc = 100;
-        if (breakevenOcc < 0) breakevenOcc = 0;
-    } else {
-        breakevenOcc = 100;
+    // ============ ORTALAMA MİSAFİR SAYISI (+/- Butonları) ============
+    function incrementGuests() {
+        const input = document.getElementById('avgGuests');
+        const val = parseNum(input.value);
+        const newVal = Math.min(6, +(val + 0.1).toFixed(1));
+        input.value = newVal.toString().replace('.', ',');
+        calculate();
+    }
+    function decrementGuests() {
+        const input = document.getElementById('avgGuests');
+        const val = parseNum(input.value);
+        const newVal = Math.max(1, +(val - 0.1).toFixed(1));
+        input.value = newVal.toString().replace('.', ',');
+        calculate();
     }
 
-    // Sonuçları HTML'e yazdır
-    document.getElementById('resTotalNights').innerText = totalPossibleNights.toLocaleString('tr-TR');
-    document.getElementById('resOccupiedNights').innerText = occupiedNights.toLocaleString('tr-TR') + ` (%${targetOccupancy})`;
-    document.getElementById('resRoomRevenue').innerText = '€ ' + roomRevenue.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-    document.getElementById('resExtraRevenue').innerText = '€ ' + extraRevenue.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-    document.getElementById('resTotalRevenue').innerText = '€ ' + totalRevenue.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    // ============ ODA TİPLERİ ============
+    let roomTypes = [
+        { id: 0, name: "Standart Oda", count: 70 },
+        { id: 1, name: "Aile Odası", count: 20 },
+        { id: 2, name: "Suit Oda", count: 10 }
+    ];
+    let roomTypeCounter = 3;
 
-    document.getElementById('resStaffExpense').innerText = '€ ' + totalStaffExpense.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-    document.getElementById('resFbExpense').innerText = '€ ' + totalFbExpense.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-    document.getElementById('resVarExpense').innerText = '€ ' + totalVarExpense.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-    document.getElementById('resFixedExpense').innerText = '€ ' + totalFixedExpense.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-    document.getElementById('resDepreciationExpense').innerText = '€ ' + seasonDepreciationExpense.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-    document.getElementById('resTotalExpense').innerText = '€ ' + totalExpense.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    function renderRoomTypes() {
+        const container = document.getElementById('room-types-container');
+        container.innerHTML = '';
+        
+        roomTypes.forEach((rt, index) => {
+            const div = document.createElement('div');
+            div.className = 'room-type-row';
+            div.innerHTML = `
+                <div>
+                    <label>Oda Tipi Adı</label>
+                    <input type="text" value="${rt.name}" oninput="updateRoomType(${index}, 'name', this.value)" placeholder="Örn: Standart Oda">
+                </div>
+                <div>
+                    <label>Oda Sayısı</label>
+                    <input type="number" value="${rt.count}" oninput="updateRoomType(${index}, 'count', this.value)" min="0">
+                </div>
+                <div>
+                    <button type="button" class="btn-remove-season" onclick="removeRoomType(${index})">X</button>
+                </div>
+            `;
+            container.appendChild(div);
+        });
+        
+        updateTotalRoomsDisplay();
+    }
 
-    const preTaxElem = document.getElementById('resPreTaxProfit');
-    preTaxElem.innerText = '€ ' + preTaxProfit.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-    preTaxElem.className = preTaxProfit >= 0 ? 'profit-positive' : 'profit-negative';
+    function updateTotalRoomsDisplay() {
+        const total = roomTypes.reduce((sum, rt) => sum + (rt.count || 0), 0);
+        document.getElementById('totalRooms').innerText = total.toLocaleString('tr-TR');
+    }
 
-    document.getElementById('resTaxAmount').innerText = '€ ' + taxAmount.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    function addRoomType() {
+        roomTypes.push({ id: roomTypeCounter++, name: "Yeni Oda Tipi", count: 0 });
+        renderRoomTypes();
+        calculate();
+    }
 
-    const netElem = document.getElementById('resNetProfit');
-    netElem.innerText = '€ ' + netProfit.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-    netElem.className = netElem.className.replace(/profit-(positive|negative)/, '') + (netProfit >= 0 ? ' profit-positive' : ' profit-negative');
+    function removeRoomType(index) {
+        if (roomTypes.length > 1) {
+            roomTypes.splice(index, 1);
+            renderRoomTypes();
+            calculate();
+        } else {
+            alert("En az bir oda tipi olmalıdır.");
+        }
+    }
 
-    document.getElementById('resTargetAdr').innerText = '€ ' + requiredAdr.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-    document.getElementById('resBreakevenOcc').innerText = '%' + breakevenOcc.toFixed(1);
-}
+    function updateRoomType(index, field, value) {
+        if (field === 'name') {
+            roomTypes[index][field] = value;
+        } else {
+            roomTypes[index][field] = parseFloat(value) || 0;
+        }
+        updateTotalRoomsDisplay();
+        calculate();
+    }
 
-window.onload = calculate;
+    // ============ SEZONLAR ============
+    let seasons = [
+        { id: 0, startDate: "2026-04-15", endDate: "2026-05-31", occupancy: 70, adr: 120, staffCount: 12 },
+        { id: 1, startDate: "2026-06-01", endDate: "2026-06-30", occupancy: 85, adr: 180, staffCount: 18 },
+        { id: 2, startDate: "2026-07-01", endDate: "2026-08-31", occupancy: 95, adr: 250, staffCount: 22 },
+        { id: 3, startDate: "2026-09-01", endDate: "2026-10-31", occupancy: 75, adr: 150, staffCount: 15 }
+    ];
+    let seasonCounter = 4;
+
+    function calculateDaysBetween(start, end) {
+        const s = new Date(start);
+        const e = new Date(end);
+        if (isNaN(s) || isNaN(e)) return 0;
+        const diffTime = Math.abs(e - s);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        return diffDays > 0 ? diffDays : 0;
+    }
+
+    function renderSeasons() {
+        const container = document.getElementById('seasons-container');
+        container.innerHTML = '';
+        
+        seasons.forEach((season, index) => {
+            const div = document.createElement('div');
+            div.className = 'season-row';
+            
+            const days = calculateDaysBetween(season.startDate, season.endDate);
+            
+            div.innerHTML = `
+                <div>
+                    <label>Başlangıç Tarihi</label>
+                    <input type="date" value="${season.startDate}" onchange="updateSeasonDate(${index}, 'startDate', this.value)">
+                </div>
+                <div>
+                    <label>Bitiş Tarihi</label>
+                    <input type="date" value="${season.endDate}" onchange="updateSeasonDate(${index}, 'endDate', this.value)">
+                </div>
+                <div>
+                    <label>Gün (Otomatik)</label>
+                    <input type="number" value="${days}" readonly>
+                </div>
+                <div>
+                    <label>Doluluk (%)</label>
+                    <input type="number" value="${season.occupancy}" oninput="updateSeasonNumber(${index}, 'occupancy', this.value)" min="1" max="100">
+                </div>
+                <div>
+                    <label>Fiyat (ADR €)</label>
+                    <input type="number" value="${season.adr}" oninput="updateSeasonNumber(${index}, 'adr', this.value)" min="0">
+                </div>
+                <div>
+                    <label>Personel Sayısı</label>
+                    <input type="number" value="${season.staffCount}" oninput="updateSeasonNumber(${index}, 'staffCount', this.value)" min="0">
+                </div>
+                <div>
+                    <button type="button" class="btn-remove-season" onclick="removeSeason(${index})">X</button>
+                </div>
+            `;
+            container.appendChild(div);
+        });
+    }
+
+    function addSeason() {
+        const today = new Date();
+        const nextMonth = new Date(today);
+        nextMonth.setDate(today.getDate() + 30);
+        
+        const formatDate = (date) => {
+            const d = new Date(date);
+            let month = '' + (d.getMonth() + 1);
+            let day = '' + d.getDate();
+            const year = d.getFullYear();
+
+            if (month.length < 2) month = '0' + month;
+            if (day.length < 2) day = '0' + day;
+
+            return [year, month, day].join('-');
+        };
+
+        seasons.push({ 
+            id: seasonCounter++, 
+            startDate: formatDate(today), 
+            endDate: formatDate(nextMonth), 
+            occupancy: 70, 
+            adr: 120, 
+            staffCount: 15 
+        });
+        renderSeasons();
+        calculate();
+    }
+
+    function removeSeason(index) {
+        if (seasons.length > 1) {
+            seasons.splice(index, 1);
+            renderSeasons();
+            calculate();
+        } else {
+            alert("En az bir sezon olmalıdır.");
+        }
+    }
+
+    function updateSeasonDate(index, field, value) {
+        seasons[index][field] = value;
+        renderSeasons();
+        calculate();
+    }
+
+    function updateSeasonNumber(index, field, value) {
+        seasons[index][field] = parseFloat(value) || 0;
+        calculate();
+    }
+
+    // ============ HESAPLAMA MOTORU ============
+    function calculate() {
+        // Girdileri al
+        const targetNetProfit = parseFloat(document.getElementById('targetNetProfit').value) || 0;
+        const avgGuests = parseNum(document.getElementById('avgGuests').value) || 1;
+        const staffCostMonthly = parseFloat(document.getElementById('staffCost').value) || 0;
+        const extraSpend = parseFloat(document.getElementById('extraSpend').value) || 0;
+        
+        const fbCostPerPerson = parseFloat(document.getElementById('fbCostPerPerson').value) || 0;
+        const roomVarCost = parseFloat(document.getElementById('roomVarCost').value) || 0;
+        const monthlyFixedCost = parseFloat(document.getElementById('fixedCost').value) || 0;
+        
+        const totalInvestment = parseFloat(document.getElementById('totalInvestment').value) || 0;
+        const annualDepreciationRate = parseFloat(document.getElementById('depreciationRate').value) || 0;
+        const taxRate = parseFloat(document.getElementById('taxRate').value) || 0;
+
+        // Toplam oda sayısı = Tüm oda tiplerinin toplamı
+        const rooms = roomTypes.reduce((sum, rt) => sum + (rt.count || 0), 0);
+
+        // Tüm sezonları döngüye al
+        let totalDays = 0;
+        let totalPossibleNights = 0;
+        let occupiedNights = 0;
+        let roomRevenue = 0;
+        let totalStaffExpense = 0;
+
+        seasons.forEach(season => {
+            const days = calculateDaysBetween(season.startDate, season.endDate);
+            totalDays += days;
+            
+            const possible = rooms * days;
+            const occupied = possible * (season.occupancy / 100);
+            const seasonMonths = days / 30;
+            
+            totalPossibleNights += possible;
+            occupiedNights += occupied;
+            roomRevenue += occupied * season.adr;
+            
+            totalStaffExpense += season.staffCount * staffCostMonthly * seasonMonths;
+        });
+
+        occupiedNights = Math.round(occupiedNights);
+        totalPossibleNights = Math.round(totalPossibleNights);
+        
+        const totalGuests = Math.round(occupiedNights * avgGuests);
+        const seasonMonths = totalDays / 30;
+
+        // Maliyetler
+        const totalFbExpense = totalGuests * fbCostPerPerson;
+        const totalVarExpense = occupiedNights * roomVarCost;
+        const totalFixedExpense = monthlyFixedCost * seasonMonths;
+        
+        const annualDepreciation = totalInvestment * (annualDepreciationRate / 100);
+        const seasonDepreciationExpense = annualDepreciation * (seasonMonths / 12);
+
+        const totalExpense = totalStaffExpense + totalFbExpense + totalVarExpense + totalFixedExpense + seasonDepreciationExpense;
+
+        // Gelirler
+        const extraRevenue = totalGuests * extraSpend;
+        const totalRevenue = roomRevenue + extraRevenue;
+
+        const preTaxProfit = totalRevenue - totalExpense;
+        const taxAmount = preTaxProfit > 0 ? preTaxProfit * (taxRate / 100) : 0;
+        const netProfit = preTaxProfit - taxAmount;
+
+        // HEDEF KÂR İÇİN TERSİNE MÜHENDİSLİK
+        const requiredPreTaxProfit = taxRate < 100 ? targetNetProfit / (1 - (taxRate / 100)) : targetNetProfit;
+        const requiredTotalRevenue = totalExpense + requiredPreTaxProfit;
+        const requiredRoomRevenue = requiredTotalRevenue - extraRevenue;
+        
+        let requiredAdr = 0;
+        if (occupiedNights > 0) {
+            requiredAdr = requiredRoomRevenue / occupiedNights;
+            if (requiredAdr < 0) requiredAdr = 0;
+        }
+
+        // Başabaş
+        const variableCostPerNight = (totalFbExpense + totalVarExpense) / (occupiedNights || 1);
+        const avgAdr = occupiedNights > 0 ? roomRevenue / occupiedNights : 0;
+        const marginalContributionPerNight = avgAdr + (extraSpend * avgGuests) - variableCostPerNight;
+        
+        let breakevenOcc = 0;
+        const totalFixedAndStaffAndDepr = totalStaffExpense + totalFixedExpense + seasonDepreciationExpense;
+        if (marginalContributionPerNight > 0) {
+            const requiredNightsForBreakeven = totalFixedAndStaffAndDepr / marginalContributionPerNight;
+            breakevenOcc = (requiredNightsForBreakeven / totalPossibleNights) * 100;
+            if (breakevenOcc > 100) breakevenOcc = 100;
+            if (breakevenOcc < 0) breakevenOcc = 0;
+        } else {
+            breakevenOcc = 100;
+        }
+
+        // Sonuçları HTML'e yazdır
+        document.getElementById('resTotalRoomsDisplay').innerText = rooms.toLocaleString('tr-TR');
+        document.getElementById('resTotalNights').innerText = totalPossibleNights.toLocaleString('tr-TR');
+        document.getElementById('resOccupiedNights').innerText = occupiedNights.toLocaleString('tr-TR') + ` (Ort. %${((occupiedNights/totalPossibleNights)*100).toFixed(1)})`;
+        document.getElementById('resTotalGuests').innerText = totalGuests.toLocaleString('tr-TR');
+        document.getElementById('resRoomRevenue').innerText = '€ ' + roomRevenue.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        document.getElementById('resExtraRevenue').innerText = '€ ' + extraRevenue.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        document.getElementById('resTotalRevenue').innerText = '€ ' + totalRevenue.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+
+        document.getElementById('resStaffExpense').innerText = '€ ' + totalStaffExpense.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        document.getElementById('resFbExpense').innerText = '€ ' + totalFbExpense.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        document.getElementById('resVarExpense').innerText = '€ ' + totalVarExpense.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        document.getElementById('resFixedExpense').innerText = '€ ' + totalFixedExpense.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        document.getElementById('resDepreciationExpense').innerText = '€ ' + seasonDepreciationExpense.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        document.getElementById('resTotalExpense').innerText = '€ ' + totalExpense.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+
+        const preTaxElem = document.getElementById('resPreTaxProfit');
+        preTaxElem.innerText = '€ ' + preTaxProfit.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        preTaxElem.className = preTaxProfit >= 0 ? 'profit-positive' : 'profit-negative';
+
+        document.getElementById('resTaxAmount').innerText = '€ ' + taxAmount.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+
+        const netElem = document.getElementById('resNetProfit');
+        netElem.innerText = '€ ' + netProfit.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        netElem.className = netElem.className.replace(/profit-(positive|negative)/, '') + (netProfit >= 0 ? ' profit-positive' : ' profit-negative');
+
+        document.getElementById('resTargetAdr').innerText = '€ ' + requiredAdr.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        document.getElementById('resBreakevenOcc').innerText = '%' + breakevenOcc.toFixed(1);
+    }
+
+    // Sayfa yüklendiğinde
+    window.onload = function() {
+        renderRoomTypes();
+        renderSeasons();
+        calculate();
+    };
 </script>
 
 </body>
