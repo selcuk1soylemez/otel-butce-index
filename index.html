@@ -671,18 +671,16 @@
             const response = await fetch(N8N_WEBHOOK_URL, { method: 'GET' });
             if (!response.ok) throw new Error('Sunucu hatası: ' + response.status);
 
-            // ÖNEMLİ: Boş cevap olabilir, önce text olarak al
             const text = await response.text();
             console.log('[DEBUG] n8n ham cevap (text):', text);
 
-            // Boş veya geçersiz cevap → boş dizi kabul et
             let rows = [];
             if (text && text.trim().length > 0) {
                 try {
                     const parsed = JSON.parse(text);
                     rows = Array.isArray(parsed) ? parsed : (parsed.data ? parsed.data : [parsed]);
                 } catch(e) {
-                    console.warn('[WARN] JSON parse hatası, boş kabul ediliyor:', e, text);
+                    console.warn('[WARN] JSON parse hatası:', e, text);
                     rows = [];
                 }
             }
@@ -690,9 +688,12 @@
             console.log('[DEBUG] İşlenen satır sayısı:', rows.length);
 
             savedCalculationsCache = rows.map((row, index) => {
-                const rawData = row.veri || row['Veri'] || row['veri (JSON)'] || row.veri_json;
-                const rawName = row.isim || row['isim'] || row['isim '] || row.Isim || 'İsimsiz Kayıt';
-                const rawDate = row.tarih || row['Tarih'] || new Date().toISOString();
+                // KRİTİK: n8n bazen { json: {...} } şeklinde paketler, onu aç
+                const actualRow = row.json || row;
+
+                const rawData = actualRow.veri || actualRow['Veri'] || actualRow['veri (JSON)'] || actualRow.veri_json;
+                const rawName = actualRow.isim || actualRow['isim'] || actualRow['isim '] || actualRow.Isim || 'İsimsiz Kayıt';
+                const rawDate = actualRow.tarih || actualRow['Tarih'] || new Date().toISOString();
 
                 let parsedData = {};
                 try {
@@ -717,7 +718,6 @@
                 <div class="empty-state" style="border-color: #fecaca; background: #fef2f2;">
                     <p style="color: #b91c1c;">⚠️ Kayıtlar yüklenemedi.</p>
                     <p class="hint">Hata: ${e.message}</p>
-                    <p class="hint">n8n workflow'unuzun aktif olduğundan emin olun.</p>
                 </div>`;
         }
     }
