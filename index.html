@@ -35,6 +35,7 @@
         .card h2 {
             margin-top: 0; font-size: 1.25rem; border-bottom: 2px solid var(--bg);
             padding-bottom: 10px; color: var(--primary);
+            display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;
         }
         .card h2.target-title { color: var(--warning); }
         .form-group { margin-bottom: 15px; }
@@ -147,6 +148,20 @@
             font-weight: bold; font-size: 0.85rem;
         }
         .btn-del:hover { background-color: #b91c1c; }
+        
+        .btn-small {
+            padding: 5px 10px; font-size: 0.75rem; border-radius: 4px;
+            border: 1px solid var(--border); background: white; cursor: pointer;
+            font-weight: 600; color: var(--text);
+        }
+        .btn-small:hover { background: #f1f5f9; }
+        
+        .empty-state {
+            text-align: center; padding: 25px; color: #64748b;
+            background: #f8fafc; border-radius: 6px; border: 1px dashed var(--border);
+        }
+        .empty-state p { margin: 5px 0; }
+        .empty-state .hint { font-size: 0.8rem; color: #94a3b8; }
         
         @media (max-width: 1100px) {
             .season-row {
@@ -288,13 +303,21 @@
                 
                 <button type="button" class="btn-save" onclick="saveCalculation()">💾 Bu Hesaplamayı Kaydet</button>
             </div>
-            
-            <!-- KAYITLI HESAPLAMALAR -->
-            <div class="card">
-                <h2>📁 Kayıtlı Hesaplamalar</h2>
-                <div id="saved-list">
-                    <p style="color:#64748b; font-size:0.9rem; text-align:center; padding:10px;">Henüz kayıtlı hesaplama yok.</p>
-                </div>
+        </div>
+    </div>
+
+    <!-- KAYITLI HESAPLAMALAR - TAM GENİŞLİK -->
+    <div class="card">
+        <h2>
+            📁 Kayıtlı Hesaplamalar
+            <span style="font-size: 0.9rem; font-weight: normal; color: #64748b;">
+                (<span id="savedCount">0</span> kayıt)
+                <button type="button" class="btn-small" onclick="refreshSavedList()" title="Yenile">🔄 Yenile</button>
+            </span>
+        </h2>
+        <div id="saved-list">
+            <div class="empty-state">
+                <p>⏳ Kayıtlar yükleniyor...</p>
             </div>
         </div>
     </div>
@@ -593,111 +616,124 @@
         document.getElementById('resBreakevenOcc').innerText = '%' + breakevenOcc.toFixed(1);
     }
 
-    // ============ KAYDET / YÜKLE / SİL ============
-    const STORAGE_KEY = 'otelButceSavedCalculations';
+    // ============ N8N WEBHOOK ENTEGRASYONU ============
+    const N8N_WEBHOOK_URL = 'https://n8n.yapay-zeka-chatbot.com/webhook/9d947b48-a1d5-4c8c-bf70-f18e7e632139';
+    let savedCalculationsCache = [];
 
-    function getSavedList() {
+    async function saveCalculation() {
         try {
-            const data = localStorage.getItem(STORAGE_KEY);
-            return data ? JSON.parse(data) : [];
-        } catch(e) { return []; }
+            const name = prompt("Bu hesaplamaya bir isim verin:", "Hesaplama - " + new Date().toLocaleString('tr-TR'));
+            if (!name) return;
+
+            const state = {
+                id: Date.now(),
+                name: name,
+                savedAt: new Date().toISOString(),
+                data: {
+                    targetNetProfit: document.getElementById('targetNetProfit').value,
+                    avgGuests: document.getElementById('avgGuests').value,
+                    staffCost: document.getElementById('staffCost').value,
+                    roomTypes: JSON.parse(JSON.stringify(roomTypes)),
+                    rentals: JSON.parse(JSON.stringify(rentals)),
+                    seasons: JSON.parse(JSON.stringify(seasons)),
+                    concept: document.getElementById('concept').value,
+                    extraSpend: document.getElementById('extraSpend').value,
+                    expenseMode: document.getElementById('expenseMode').value,
+                    fbCostPerPerson: document.getElementById('fbCostPerPerson').value,
+                    roomVarCost: document.getElementById('roomVarCost').value,
+                    fixedCost: document.getElementById('fixedCost').value,
+                    totalInvestment: document.getElementById('totalInvestment').value,
+                    depreciationRate: document.getElementById('depreciationRate').value,
+                    taxRate: document.getElementById('taxRate').value
+                }
+            };
+
+            const response = await fetch(N8N_WEBHOOK_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(state)
+            });
+
+            if (!response.ok) throw new Error('Sunucu hatası: ' + response.status);
+
+            alert(`✅ "${name}" başarıyla kaydedildi!`);
+            await refreshSavedList();
+        } catch (e) {
+            console.error('[ERROR] saveCalculation:', e);
+            alert('❌ Kayıt sırasında hata oluştu: ' + e.message);
+        }
     }
 
-    function saveCalculation() {
-        const name = prompt("Bu hesaplamaya bir isim verin:", "Hesaplama - " + new Date().toLocaleString('tr-TR'));
-        if (!name) return;
-        
-        const state = {
-            id: Date.now(),
-            name: name,
-            savedAt: new Date().toISOString(),
-            data: {
-                targetNetProfit: document.getElementById('targetNetProfit').value,
-                avgGuests: document.getElementById('avgGuests').value,
-                staffCost: document.getElementById('staffCost').value,
-                roomTypes: JSON.parse(JSON.stringify(roomTypes)),
-                rentals: JSON.parse(JSON.stringify(rentals)),
-                seasons: JSON.parse(JSON.stringify(seasons)),
-                concept: document.getElementById('concept').value,
-                extraSpend: document.getElementById('extraSpend').value,
-                expenseMode: document.getElementById('expenseMode').value,
-                fbCostPerPerson: document.getElementById('fbCostPerPerson').value,
-                roomVarCost: document.getElementById('roomVarCost').value,
-                fixedCost: document.getElementById('fixedCost').value,
-                totalInvestment: document.getElementById('totalInvestment').value,
-                depreciationRate: document.getElementById('depreciationRate').value,
-                taxRate: document.getElementById('taxRate').value
-            }
-        };
-        
-        const saved = getSavedList();
-        saved.push(state);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
-        renderSavedList();
-        alert("✅ Hesaplama başarıyla kaydedildi!");
-    }
+    async function refreshSavedList() {
+        const container = document.getElementById('saved-list');
+        container.innerHTML = `<div class="empty-state"><p>⏳ Kayıtlar yükleniyor...</p></div>`;
+        try {
+            const response = await fetch(N8N_WEBHOOK_URL, { method: 'GET' });
+            if (!response.ok) throw new Error('Sunucu hatası: ' + response.status);
 
-    function loadCalculation(id) {
-        const saved = getSavedList();
-        const item = saved.find(s => s.id === id);
-        if (!item) return;
-        
-        if (!confirm(`"${item.name}" hesaplaması yüklenecek. Mevcut veriler değişecek. Devam edilsin mi?`)) return;
-        
-        const d = item.data;
-        document.getElementById('targetNetProfit').value = d.targetNetProfit;
-        document.getElementById('avgGuests').value = d.avgGuests;
-        document.getElementById('staffCost').value = d.staffCost;
-        document.getElementById('concept').value = d.concept;
-        document.getElementById('extraSpend').value = d.extraSpend;
-        document.getElementById('expenseMode').value = d.expenseMode;
-        document.getElementById('fbCostPerPerson').value = d.fbCostPerPerson;
-        document.getElementById('roomVarCost').value = d.roomVarCost;
-        document.getElementById('fixedCost').value = d.fixedCost;
-        document.getElementById('totalInvestment').value = d.totalInvestment;
-        document.getElementById('depreciationRate').value = d.depreciationRate;
-        document.getElementById('taxRate').value = d.taxRate;
-        
-        roomTypes = JSON.parse(JSON.stringify(d.roomTypes));
-        rentals = JSON.parse(JSON.stringify(d.rentals));
-        seasons = JSON.parse(JSON.stringify(d.seasons));
-        roomTypeCounter = Math.max(...roomTypes.map(r => r.id), 0) + 1;
-        rentalCounter = Math.max(...rentals.map(r => r.id), -1) + 1;
-        seasonCounter = Math.max(...seasons.map(s => s.id), 0) + 1;
-        
-        renderRoomTypes();
-        renderRentals();
-        renderSeasons();
-        calculate();
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+            const rows = await response.json();
+            console.log('[DEBUG] n8n ham veri:', rows);
 
-    function deleteCalculation(id) {
-        const saved = getSavedList();
-        const item = saved.find(s => s.id === id);
-        if (!item) return;
-        if (!confirm(`"${item.name}" kaydı silinecek. Emin misiniz?`)) return;
-        
-        const newSaved = saved.filter(s => s.id !== id);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(newSaved));
-        renderSavedList();
+            // n8n'den gelen veri dizi olmayabilir, kontrol et
+            const rowsArray = Array.isArray(rows) ? rows : (rows.data ? rows.data : [rows]);
+
+            savedCalculationsCache = rowsArray.map((row, index) => {
+                const rawData = row.veri || row['Veri'] || row['veri (JSON)'] || row.veri_json;
+                const rawName = row.isim || row['isim'] || row['isim '] || row.Isim || 'İsimsiz Kayıt';
+                const rawDate = row.tarih || row['Tarih'] || new Date().toISOString();
+
+                let parsedData = {};
+                try {
+                    parsedData = typeof rawData === 'string' ? JSON.parse(rawData) : (rawData || {});
+                } catch(e) {
+                    console.warn('Parse hatası:', e, rawData);
+                }
+
+                return {
+                    id: index,
+                    name: rawName,
+                    savedAt: rawDate,
+                    data: parsedData
+                };
+            }).filter(item => item.data && Object.keys(item.data).length > 0);
+
+            console.log('[DEBUG] İşlenmiş kayıtlar:', savedCalculationsCache);
+            renderSavedList();
+        } catch (e) {
+            console.error('[ERROR] refreshSavedList:', e);
+            container.innerHTML = `
+                <div class="empty-state" style="border-color: #fecaca; background: #fef2f2;">
+                    <p style="color: #b91c1c;">⚠️ Kayıtlar yüklenemedi.</p>
+                    <p class="hint">Hata: ${e.message}</p>
+                    <p class="hint">n8n workflow'unuzun aktif olduğundan emin olun.</p>
+                </div>`;
+        }
     }
 
     function renderSavedList() {
         const container = document.getElementById('saved-list');
-        const saved = getSavedList();
-        
-        if (saved.length === 0) {
-            container.innerHTML = '<p style="color:#64748b; font-size:0.9rem; text-align:center; padding:10px;">Henüz kayıtlı hesaplama yok.</p>';
+        const countEl = document.getElementById('savedCount');
+        if (countEl) countEl.innerText = savedCalculationsCache.length;
+
+        if (savedCalculationsCache.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <p>📭 Henüz kayıtlı hesaplama yok.</p>
+                    <p class="hint">Sağ üstteki "💾 Bu Hesaplamayı Kaydet" butonuna tıklayarak ilk kaydınızı oluşturun.</p>
+                </div>`;
             return;
         }
-        
+
         container.innerHTML = '';
-        saved.slice().reverse().forEach(item => {
+        savedCalculationsCache.slice().reverse().forEach(item => {
             const div = document.createElement('div');
             div.className = 'saved-item';
-            const dateObj = new Date(item.savedAt);
-            const dateStr = dateObj.toLocaleDateString('tr-TR') + ' ' + dateObj.toLocaleTimeString('tr-TR', {hour: '2-digit', minute: '2-digit'});
+            let dateStr = '';
+            try {
+                const dateObj = new Date(item.savedAt);
+                dateStr = dateObj.toLocaleDateString('tr-TR') + ' ' + dateObj.toLocaleTimeString('tr-TR', {hour: '2-digit', minute: '2-digit'});
+            } catch(e) { dateStr = item.savedAt; }
+            
             div.innerHTML = `
                 <div class="saved-info">
                     <span class="saved-name">${item.name}</span>
@@ -710,13 +746,62 @@
         });
     }
 
+    async function loadCalculation(id) {
+        const item = savedCalculationsCache.find(s => s.id === id);
+        if (!item) { alert('Kayıt bulunamadı!'); return; }
+        if (!confirm(`"${item.name}" hesaplaması yüklenecek. Mevcut veriler değişecek. Devam edilsin mi?`)) return;
+
+        try {
+            const d = item.data;
+            document.getElementById('targetNetProfit').value = d.targetNetProfit;
+            document.getElementById('avgGuests').value = d.avgGuests;
+            document.getElementById('staffCost').value = d.staffCost;
+            document.getElementById('concept').value = d.concept;
+            document.getElementById('extraSpend').value = d.extraSpend;
+            document.getElementById('expenseMode').value = d.expenseMode;
+            document.getElementById('fbCostPerPerson').value = d.fbCostPerPerson;
+            document.getElementById('roomVarCost').value = d.roomVarCost;
+            document.getElementById('fixedCost').value = d.fixedCost;
+            document.getElementById('totalInvestment').value = d.totalInvestment;
+            document.getElementById('depreciationRate').value = d.depreciationRate;
+            document.getElementById('taxRate').value = d.taxRate;
+
+            roomTypes = JSON.parse(JSON.stringify(d.roomTypes || []));
+            rentals = JSON.parse(JSON.stringify(d.rentals || []));
+            seasons = JSON.parse(JSON.stringify(d.seasons || []));
+
+            roomTypeCounter = Math.max(...roomTypes.map(r => r.id), 0) + 1;
+            rentalCounter = Math.max(...rentals.map(r => r.id), -1) + 1;
+            seasonCounter = Math.max(...seasons.map(s => s.id), 0) + 1;
+
+            renderRoomTypes();
+            renderRentals();
+            renderSeasons();
+            calculate();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            alert(`✅ "${item.name}" başarıyla yüklendi!`);
+        } catch(e) {
+            console.error('[ERROR] loadCalculation:', e);
+            alert('❌ Yükleme sırasında hata oluştu: ' + e.message);
+        }
+    }
+
+    function deleteCalculation(id) {
+        const item = savedCalculationsCache.find(s => s.id === id);
+        if (!item) return;
+        if (!confirm(`"${item.name}" listeden gizlenecek.\n\nNOT: Google Sheets'teki kaydı kalıcı silmek için Sheets dosyasını elle açıp satırı silmen gerekir. Devam edilsin mi?`)) return;
+
+        savedCalculationsCache = savedCalculationsCache.filter(s => s.id !== id);
+        renderSavedList();
+    }
+
     // ============ BAŞLANGIÇ ============
     window.onload = function() {
         renderRoomTypes();
         renderRentals();
         renderSeasons();
-        renderSavedList();
         calculate();
+        refreshSavedList();
     };
 </script>
 
