@@ -671,13 +671,25 @@
             const response = await fetch(N8N_WEBHOOK_URL, { method: 'GET' });
             if (!response.ok) throw new Error('Sunucu hatası: ' + response.status);
 
-            const rows = await response.json();
-            console.log('[DEBUG] n8n ham veri:', rows);
+            // ÖNEMLİ: Boş cevap olabilir, önce text olarak al
+            const text = await response.text();
+            console.log('[DEBUG] n8n ham cevap (text):', text);
 
-            // n8n'den gelen veri dizi olmayabilir, kontrol et
-            const rowsArray = Array.isArray(rows) ? rows : (rows.data ? rows.data : [rows]);
+            // Boş veya geçersiz cevap → boş dizi kabul et
+            let rows = [];
+            if (text && text.trim().length > 0) {
+                try {
+                    const parsed = JSON.parse(text);
+                    rows = Array.isArray(parsed) ? parsed : (parsed.data ? parsed.data : [parsed]);
+                } catch(e) {
+                    console.warn('[WARN] JSON parse hatası, boş kabul ediliyor:', e, text);
+                    rows = [];
+                }
+            }
 
-            savedCalculationsCache = rowsArray.map((row, index) => {
+            console.log('[DEBUG] İşlenen satır sayısı:', rows.length);
+
+            savedCalculationsCache = rows.map((row, index) => {
                 const rawData = row.veri || row['Veri'] || row['veri (JSON)'] || row.veri_json;
                 const rawName = row.isim || row['isim'] || row['isim '] || row.Isim || 'İsimsiz Kayıt';
                 const rawDate = row.tarih || row['Tarih'] || new Date().toISOString();
