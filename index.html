@@ -672,7 +672,8 @@
             if (!response.ok) throw new Error('Sunucu hatası: ' + response.status);
 
             const text = await response.text();
-            console.log('[DEBUG] n8n ham cevap (text):', text);
+            console.log('=== [DEBUG] n8n ham cevap (text) ===');
+            console.log(text);
 
             let rows = [];
             if (text && text.trim().length > 0) {
@@ -685,22 +686,45 @@
                 }
             }
 
-            console.log('[DEBUG] İşlenen satır sayısı:', rows.length);
+            console.log('=== [DEBUG] rows.length ===', rows.length);
+            console.log('=== [DEBUG] rows[0] ===', JSON.stringify(rows[0], null, 2));
 
             savedCalculationsCache = rows.map((row, index) => {
-                // KRİTİK: n8n bazen { json: {...} } şeklinde paketler, onu aç
+                console.log(`\n=== [DEBUG MAP #${index}] BAŞLANGIÇ ===`);
+                console.log('[DEBUG MAP] row:', row);
+                console.log('[DEBUG MAP] row.json var mı?:', !!row.json);
+
                 const actualRow = row.json || row;
+                console.log('[DEBUG MAP] actualRow:', actualRow);
+                console.log('[DEBUG MAP] actualRow keys:', Object.keys(actualRow || {}));
 
                 const rawData = actualRow.veri || actualRow['Veri'] || actualRow['veri (JSON)'] || actualRow.veri_json;
                 const rawName = actualRow.isim || actualRow['isim'] || actualRow['isim '] || actualRow.Isim || 'İsimsiz Kayıt';
                 const rawDate = actualRow.tarih || actualRow['Tarih'] || new Date().toISOString();
 
+                console.log('[DEBUG MAP] rawData:', rawData);
+                console.log('[DEBUG MAP] rawData typeof:', typeof rawData);
+                console.log('[DEBUG MAP] rawName:', rawName);
+                console.log('[DEBUG MAP] rawDate:', rawDate);
+
                 let parsedData = {};
                 try {
-                    parsedData = typeof rawData === 'string' ? JSON.parse(rawData) : (rawData || {});
+                    if (typeof rawData === 'string') {
+                        parsedData = JSON.parse(rawData);
+                        console.log('[DEBUG MAP] JSON.parse BAŞARILI');
+                    } else if (rawData && typeof rawData === 'object') {
+                        parsedData = rawData;
+                        console.log('[DEBUG MAP] rawData zaten obje');
+                    } else {
+                        console.log('[DEBUG MAP] rawData boş/undefined');
+                    }
                 } catch(e) {
-                    console.warn('Parse hatası:', e, rawData);
+                    console.error('[DEBUG MAP] PARSE HATASI:', e);
+                    console.error('[DEBUG MAP] Hatalı rawData:', rawData);
                 }
+
+                console.log('[DEBUG MAP] parsedData:', parsedData);
+                console.log('[DEBUG MAP] parsedData keys sayısı:', Object.keys(parsedData).length);
 
                 return {
                     id: index,
@@ -708,9 +732,16 @@
                     savedAt: rawDate,
                     data: parsedData
                 };
-            }).filter(item => item.data && Object.keys(item.data).length > 0);
+            }).filter(item => {
+                const pass = item.data && Object.keys(item.data).length > 0;
+                console.log('[DEBUG FILTER] item.name:', item.name, '| data keys:', Object.keys(item.data).length, '| PASS:', pass);
+                return pass;
+            });
 
-            console.log('[DEBUG] İşlenmiş kayıtlar:', savedCalculationsCache);
+            console.log('\n=== [DEBUG] SONUÇ ===');
+            console.log('İşlenmiş kayıt sayısı:', savedCalculationsCache.length);
+            console.log('İşlenmiş kayıtlar:', savedCalculationsCache);
+
             renderSavedList();
         } catch (e) {
             console.error('[ERROR] refreshSavedList:', e);
