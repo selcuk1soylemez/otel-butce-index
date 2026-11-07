@@ -262,6 +262,22 @@
                     <input type="number" id="roomVarCost" value="8" min="0" oninput="calculate()">
                 </div>
                 <div class="form-group">
+                    <label for="elecCost">Sezonluk Elektrik Gideri (Toplam - €)</label>
+                    <input type="number" id="elecCost" value="0" min="0" oninput="calculate()">
+                </div>
+                <div class="form-group">
+                    <label for="waterCost">Sezonluk Su Gideri (Toplam - €)</label>
+                    <input type="number" id="waterCost" value="0" min="0" oninput="calculate()">
+                </div>
+                <div class="form-group">
+                    <label for="lngCost">Sezonluk LNG / Doğalgaz Gideri (Toplam - €)</label>
+                    <input type="number" id="lngCost" value="0" min="0" oninput="calculate()">
+                </div>
+                <div class="form-group">
+                    <label>Elektrik + Su + LNG Ort. Gerçekleşen Oda Gecesi Başı (€) <span style="color:#94a3b8; font-weight:normal;">— otomatik, müdahale edilemez</span></label>
+                    <input type="text" id="utilityPerNight" value="0,00" readonly tabindex="-1">
+                </div>
+                <div class="form-group">
                     <label for="fixedCost">Aylık Sabit Genel Giderler (Kira, Bakım, Lisans vb. - €)</label>
                     <input type="number" id="fixedCost" value="10000" min="0" oninput="calculate()">
                 </div>
@@ -296,6 +312,9 @@
                     <tr><td>Toplam Personel Maliyeti</td><td id="resStaffExpense">€ 0</td></tr>
                     <tr><td>Toplam Yiyecek & İçecek (F&B) Maliyeti</td><td id="resFbExpense">€ 0</td></tr>
                     <tr><td>Oda Bazlı Değişken Maliyetler</td><td id="resVarExpense">€ 0</td></tr>
+                    <tr><td>Sezonluk Elektrik Gideri</td><td id="resElecExpense">€ 0</td></tr>
+                    <tr><td>Sezonluk Su Gideri</td><td id="resWaterExpense">€ 0</td></tr>
+                    <tr><td>Sezonluk LNG / Doğalgaz Gideri</td><td id="resLngExpense">€ 0</td></tr>
                     <tr><td>Toplam Sabit Giderler <span id="fixedPeriodLabel" style="font-size:0.8rem; color:#64748b;">(Yıllık)</span></td><td id="resFixedExpense">€ 0</td></tr>
                     <tr><td>Amortisman (Eskime Payı) Gideri <span id="deprPeriodLabel" style="font-size:0.8rem; color:#64748b;">(Yıllık)</span></td><td id="resDepreciationExpense">€ 0</td></tr>
                     <tr class="highlight-row"><td>Toplam İşletme Maliyeti</td><td id="resTotalExpense">€ 0</td></tr>
@@ -529,6 +548,9 @@
         const extraSpend = parseFloat(document.getElementById('extraSpend').value) || 0;
         const fbCostPerPerson = parseFloat(document.getElementById('fbCostPerPerson').value) || 0;
         const roomVarCost = parseFloat(document.getElementById('roomVarCost').value) || 0;
+        const elecCost = parseFloat(document.getElementById('elecCost').value) || 0;
+        const waterCost = parseFloat(document.getElementById('waterCost').value) || 0;
+        const lngCost = parseFloat(document.getElementById('lngCost').value) || 0;
         const monthlyFixedCost = parseFloat(document.getElementById('fixedCost').value) || 0;
         const totalInvestment = parseFloat(document.getElementById('totalInvestment').value) || 0;
         const annualDepreciationRate = parseFloat(document.getElementById('depreciationRate').value) || 0;
@@ -563,7 +585,10 @@
         const annualDepreciation = totalInvestment * (annualDepreciationRate / 100);
         const seasonDepreciationExpense = annualDepreciation * (expenseMonths / 12);
 
-        const totalExpense = totalStaffExpense + totalFbExpense + totalVarExpense + totalFixedExpense + seasonDepreciationExpense;
+        const totalUtilityExpense = elecCost + waterCost + lngCost;
+        const utilityPerNight = occupiedNights > 0 ? totalUtilityExpense / occupiedNights : 0;
+
+        const totalExpense = totalStaffExpense + totalFbExpense + totalVarExpense + totalFixedExpense + seasonDepreciationExpense + totalUtilityExpense;
 
         const extraRevenue = totalGuests * extraSpend;
         const rentalRevenue = rentals.reduce((sum, r) => sum + (r.amount || 0), 0);
@@ -586,7 +611,7 @@
         const avgAdr = occupiedNights > 0 ? roomRevenue / occupiedNights : 0;
         const marginalContributionPerNight = avgAdr + (extraSpend * avgGuests) - variableCostPerNight;
         let breakevenOcc = 0;
-        const totalFixedAndStaffAndDepr = totalStaffExpense + totalFixedExpense + seasonDepreciationExpense;
+        const totalFixedAndStaffAndDepr = totalStaffExpense + totalFixedExpense + seasonDepreciationExpense + totalUtilityExpense;
         if (marginalContributionPerNight > 0) {
             const requiredNightsForBreakeven = totalFixedAndStaffAndDepr / marginalContributionPerNight;
             breakevenOcc = (requiredNightsForBreakeven / totalPossibleNights) * 100;
@@ -609,6 +634,10 @@
         document.getElementById('resStaffExpense').innerText = '€ ' + totalStaffExpense.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
         document.getElementById('resFbExpense').innerText = '€ ' + totalFbExpense.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
         document.getElementById('resVarExpense').innerText = '€ ' + totalVarExpense.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        document.getElementById('resElecExpense').innerText = '€ ' + elecCost.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        document.getElementById('resWaterExpense').innerText = '€ ' + waterCost.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        document.getElementById('resLngExpense').innerText = '€ ' + lngCost.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        document.getElementById('utilityPerNight').value = utilityPerNight.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
         document.getElementById('resFixedExpense').innerText = '€ ' + totalFixedExpense.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
         document.getElementById('resDepreciationExpense').innerText = '€ ' + seasonDepreciationExpense.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
         document.getElementById('resTotalExpense').innerText = '€ ' + totalExpense.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
@@ -631,12 +660,58 @@
             avgOccupancy: totalPossibleNights > 0 ? (occupiedNights / totalPossibleNights) * 100 : 0,
             roomRevenue, extraRevenue, rentalRevenue, totalRevenue,
             totalStaffExpense, totalFbExpense, totalVarExpense, totalFixedExpense,
-            seasonDepreciationExpense, totalExpense,
+            seasonDepreciationExpense, totalUtilityExpense, elecCost, waterCost, lngCost,
+            utilityPerNight, totalExpense,
             preTaxProfit, taxAmount, netProfit, requiredAdr, breakevenOcc
         };
     }
 
     // ============ EXCEL DIŞA AKTARIM ============
+    // Sayı hücrelerine görünüm maskesi (binlik ayraç + ondalık) uygular
+    function applyNumberMasks(ws) {
+        if (!ws || !ws['!ref']) return;
+        const range = XLSX.utils.decode_range(ws['!ref']);
+        const MONEY = '#,##0.00" €"';
+        const PERCENT = '0.00"%"';
+        const INTEGER = '#,##0';
+        let section = '';
+        for (let R = range.s.r; R <= range.e.r; ++R) {
+            const labelCell = ws[XLSX.utils.encode_cell({ c: 0, r: R })];
+            const label = labelCell && typeof labelCell.v === 'string' ? labelCell.v : '';
+            if (label === 'ODA TİPLERİ') section = 'rooms';
+            else if (label === 'KİRA VE DİĞER YILLIK GELİRLER') section = 'rentals';
+            else if (label === 'SEZONLAR') section = 'seasons';
+            else if (label === 'GENEL PARAMETRELER') section = 'params';
+
+            const isSeasonRow = /^\d{4}-\d{2}-\d{2}$/.test(label);
+            const money = label.indexOf('€') >= 0 || label.indexOf('Yıllık Tutar') >= 0;
+            const percent = /\(%\)/.test(label);
+            const integer = /Oda Sayısı|Personel Sayısı|Geceleme|Toplam Oda|Toplam Misafir|Gün/.test(label)
+                && !/Ortalama Oda Başına/.test(label);
+            for (let C = 1; C <= range.e.c; ++C) {
+                const cell = ws[XLSX.utils.encode_cell({ c: C, r: R })];
+                if (!cell || typeof cell.v !== 'number') continue;
+                if (isSeasonRow) {
+                    // A:başlangıç B:bitiş C:gün D:doluluk E:ADR F:personel
+                    if (C === 2) cell.z = INTEGER;
+                    else if (C === 3) cell.z = PERCENT;
+                    else if (C === 4) cell.z = MONEY;
+                    else if (C === 5) cell.z = INTEGER;
+                } else if (section === 'rooms' && C === 1) {
+                    cell.z = INTEGER;
+                } else if (section === 'rentals' && C === 1) {
+                    cell.z = MONEY;
+                } else if (money) {
+                    cell.z = MONEY;
+                } else if (percent) {
+                    cell.z = PERCENT;
+                } else if (integer) {
+                    cell.z = INTEGER;
+                }
+            }
+        }
+    }
+
     function exportToExcel() {
         if (typeof XLSX === 'undefined') {
             alert('❌ Excel kütüphanesi yüklenemedi.\nİnternet bağlantısını kontrol edip sayfayı yenileyin.');
@@ -665,6 +740,10 @@
             ['Sabit Gider ve Amortisman Dönemi', selText('expenseMode')],
             ['Kişibaşı Günlük F&B Hammadde Maliyeti (€)', num('fbCostPerPerson')],
             ['Oda Başına Günlük Temizlik/Enerji/Sarf Maliyeti (€)', num('roomVarCost')],
+            ['Sezonluk Elektrik Gideri (Toplam - €)', num('elecCost')],
+            ['Sezonluk Su Gideri (Toplam - €)', num('waterCost')],
+            ['Sezonluk LNG / Doğalgaz Gideri (Toplam - €)', num('lngCost')],
+            ['Elektrik + Su + LNG Ort. Gerçekleşen Oda Gecesi Başı (€) (Otomatik)', round2(r.utilityPerNight)],
             ['Aylık Sabit Genel Giderler (€)', num('fixedCost')],
             ['Toplam Yatırım Değeri (€)', num('totalInvestment')],
             ['Yıllık Amortisman / Eskime Payı Oranı (%)', num('depreciationRate')],
@@ -702,6 +781,10 @@
             ['Toplam Personel Maliyeti (€)', round2(r.totalStaffExpense)],
             ['Toplam Yiyecek & İçecek (F&B) Maliyeti (€)', round2(r.totalFbExpense)],
             ['Oda Bazlı Değişken Maliyetler (€)', round2(r.totalVarExpense)],
+            ['Sezonluk Elektrik Gideri (€)', round2(r.elecCost)],
+            ['Sezonluk Su Gideri (€)', round2(r.waterCost)],
+            ['Sezonluk LNG / Doğalgaz Gideri (€)', round2(r.lngCost)],
+            ['Elektrik + Su + LNG Ort. Gerçekleşen Oda Gecesi Başı (€)', round2(r.utilityPerNight)],
             ['Toplam Sabit Giderler (€)', round2(r.totalFixedExpense)],
             ['Amortisman (Eskime Payı) Gideri (€)', round2(r.seasonDepreciationExpense)],
             ['Toplam İşletme Maliyeti (€)', round2(r.totalExpense)],
@@ -713,8 +796,12 @@
         ];
 
         const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(inputs), 'Girişler');
-        XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(results), 'Sonuçlar');
+        const wsInputs = XLSX.utils.aoa_to_sheet(inputs);
+        const wsResults = XLSX.utils.aoa_to_sheet(results);
+        applyNumberMasks(wsInputs);
+        applyNumberMasks(wsResults);
+        XLSX.utils.book_append_sheet(wb, wsInputs, 'Girişler');
+        XLSX.utils.book_append_sheet(wb, wsResults, 'Sonuçlar');
 
         const d = new Date();
         const pad = n => String(n).padStart(2, '0');
@@ -747,6 +834,9 @@
                     expenseMode: document.getElementById('expenseMode').value,
                     fbCostPerPerson: document.getElementById('fbCostPerPerson').value,
                     roomVarCost: document.getElementById('roomVarCost').value,
+                    elecCost: document.getElementById('elecCost').value,
+                    waterCost: document.getElementById('waterCost').value,
+                    lngCost: document.getElementById('lngCost').value,
                     fixedCost: document.getElementById('fixedCost').value,
                     totalInvestment: document.getElementById('totalInvestment').value,
                     depreciationRate: document.getElementById('depreciationRate').value,
@@ -910,6 +1000,9 @@
             document.getElementById('expenseMode').value = d.expenseMode;
             document.getElementById('fbCostPerPerson').value = d.fbCostPerPerson;
             document.getElementById('roomVarCost').value = d.roomVarCost;
+            document.getElementById('elecCost').value = d.elecCost || 0;
+            document.getElementById('waterCost').value = d.waterCost || 0;
+            document.getElementById('lngCost').value = d.lngCost || 0;
             document.getElementById('fixedCost').value = d.fixedCost;
             document.getElementById('totalInvestment').value = d.totalInvestment;
             document.getElementById('depreciationRate').value = d.depreciationRate;
