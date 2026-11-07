@@ -126,7 +126,12 @@
             transition: background 0.2s;
         }
         .btn-save:hover { background-color: #15803d; }
-        
+
+        .btn-row { display: flex; gap: 10px; margin-top: 20px; }
+        .btn-row .btn-save { margin-top: 0; flex: 1; width: auto; }
+        .btn-excel { background-color: var(--primary); }
+        .btn-excel:hover { background-color: var(--primary-dark); }
+
         .saved-item {
             display: grid; grid-template-columns: 1fr auto auto;
             gap: 8px; align-items: center; padding: 12px;
@@ -301,7 +306,10 @@
                     <tr><td>Başabaş Doluluk Oranı</td><td id="resBreakevenOcc">-%</td></tr>
                 </table>
                 
-                <button type="button" class="btn-save" onclick="saveCalculation()">💾 Bu Hesaplamayı Kaydet</button>
+                <div class="btn-row">
+                    <button type="button" class="btn-save" onclick="saveCalculation()">💾 Bu Hesaplamayı Kaydet</button>
+                    <button type="button" class="btn-save btn-excel" onclick="exportToExcel()">📊 Excel'e Aktar</button>
+                </div>
             </div>
         </div>
     </div>
@@ -323,6 +331,7 @@
     </div>
 </div>
 
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js" integrity="sha384-EnyY0/GSHQGSxSgMwaIPzSESbqoOLSexfnSMN2AP+39Ckmn92stwABZynq1JyzdT" crossorigin="anonymous"></script>
 <script>
     // ============ YARDIMCI FONKSİYONLAR ============
     function parseNum(val) {
@@ -511,6 +520,8 @@
     }
 
     // ============ HESAPLAMA MOTORU ============
+    let lastResults = {};
+
     function calculate() {
         const targetNetProfit = parseFloat(document.getElementById('targetNetProfit').value) || 0;
         const avgGuests = parseNum(document.getElementById('avgGuests').value) || 1;
@@ -614,6 +625,101 @@
 
         document.getElementById('resTargetAdr').innerText = '€ ' + requiredAdr.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
         document.getElementById('resBreakevenOcc').innerText = '%' + breakevenOcc.toFixed(1);
+
+        lastResults = {
+            rooms, totalPossibleNights, occupiedNights, totalGuests,
+            avgOccupancy: totalPossibleNights > 0 ? (occupiedNights / totalPossibleNights) * 100 : 0,
+            roomRevenue, extraRevenue, rentalRevenue, totalRevenue,
+            totalStaffExpense, totalFbExpense, totalVarExpense, totalFixedExpense,
+            seasonDepreciationExpense, totalExpense,
+            preTaxProfit, taxAmount, netProfit, requiredAdr, breakevenOcc
+        };
+    }
+
+    // ============ EXCEL DIŞA AKTARIM ============
+    function exportToExcel() {
+        if (typeof XLSX === 'undefined') {
+            alert('❌ Excel kütüphanesi yüklenemedi.\nİnternet bağlantısını kontrol edip sayfayı yenileyin.');
+            return;
+        }
+
+        const num = id => parseNum(document.getElementById(id).value);
+        const selText = id => {
+            const el = document.getElementById(id);
+            return el.options[el.selectedIndex].text;
+        };
+        const round2 = v => Math.round((v || 0) * 100) / 100;
+        const r = lastResults;
+
+        // Sayfa 1: Tüm giriş değerleri
+        const inputs = [
+            ['OTEL BÜTÇE VE KÂRLILIK SİMÜLATÖRÜ — GİRİŞ DEĞERLERİ'],
+            ['Aktarım Tarihi', new Date().toLocaleString('tr-TR')],
+            [],
+            ['GENEL PARAMETRELER', 'Değer'],
+            ['Hedeflenen Net Kâr (€)', num('targetNetProfit')],
+            ['Ortalama Oda Başına Misafir Sayısı', num('avgGuests')],
+            ['Personel Başına Aylık Giydirilmiş Maliyet (€)', num('staffCost')],
+            ['Otel Konsepti', selText('concept')],
+            ['Kişibaşı Günlük Ekstra Harcama (€)', num('extraSpend')],
+            ['Sabit Gider ve Amortisman Dönemi', selText('expenseMode')],
+            ['Kişibaşı Günlük F&B Hammadde Maliyeti (€)', num('fbCostPerPerson')],
+            ['Oda Başına Günlük Temizlik/Enerji/Sarf Maliyeti (€)', num('roomVarCost')],
+            ['Aylık Sabit Genel Giderler (€)', num('fixedCost')],
+            ['Toplam Yatırım Değeri (€)', num('totalInvestment')],
+            ['Yıllık Amortisman / Eskime Payı Oranı (%)', num('depreciationRate')],
+            ['Kurumlar Vergisi Oranı (%)', num('taxRate')],
+            [],
+            ['ODA TİPLERİ', 'Oda Sayısı'],
+            ...roomTypes.map(rt => [rt.name, rt.count || 0]),
+            ['Toplam Oda Sayısı', roomTypes.reduce((s, rt) => s + (rt.count || 0), 0)],
+            [],
+            ['KİRA VE DİĞER YILLIK GELİRLER', 'Yıllık Tutar (€)'],
+            ...rentals.map(rn => [rn.name, rn.amount || 0]),
+            ['Toplam Kira Geliri', rentals.reduce((s, rn) => s + (rn.amount || 0), 0)],
+            [],
+            ['SEZONLAR'],
+            ['Başlangıç', 'Bitiş', 'Gün', 'Doluluk (%)', 'ADR (€)', 'Personel Sayısı'],
+            ...seasons.map(s => [
+                s.startDate, s.endDate,
+                calculateDaysBetween(s.startDate, s.endDate),
+                s.occupancy, s.adr, s.staffCount
+            ])
+        ];
+
+        // Sayfa 2: Tüm sonuç değerleri
+        const results = [
+            ['SEZONLUK FİNANSAL ÖZET VE HEDEF ANALİZİ', 'Değer'],
+            ['Toplam Oda Sayısı', r.rooms || 0],
+            ['Toplam Satılabilir Oda Geceleme', r.totalPossibleNights || 0],
+            ['Gerçekleşen Konaklayan Geceleme (Doluluk ile)', r.occupiedNights || 0],
+            ['Ortalama Doluluk (%)', round2(r.avgOccupancy)],
+            ['Toplam Misafir Sayısı (Tahmini)', r.totalGuests || 0],
+            ['Toplam Oda Geliri (€)', round2(r.roomRevenue)],
+            ['Toplam Ekstra Gelirler (€)', round2(r.extraRevenue)],
+            ['Kira ve Diğer Yıllık Gelirler (€)', round2(r.rentalRevenue)],
+            ['Toplam Brüt Ciro (€)', round2(r.totalRevenue)],
+            ['Toplam Personel Maliyeti (€)', round2(r.totalStaffExpense)],
+            ['Toplam Yiyecek & İçecek (F&B) Maliyeti (€)', round2(r.totalFbExpense)],
+            ['Oda Bazlı Değişken Maliyetler (€)', round2(r.totalVarExpense)],
+            ['Toplam Sabit Giderler (€)', round2(r.totalFixedExpense)],
+            ['Amortisman (Eskime Payı) Gideri (€)', round2(r.seasonDepreciationExpense)],
+            ['Toplam İşletme Maliyeti (€)', round2(r.totalExpense)],
+            ['Vergi Öncesi Kâr / (Zarar) (€)', round2(r.preTaxProfit)],
+            ['Kurumlar Vergisi Tutarı (€)', round2(r.taxAmount)],
+            ['Sezon Sonu Net Kâr / (Zarar) (€)', round2(r.netProfit)],
+            ['Hedef Kâr İçin Gereken Ort. Oda Fiyatı (ADR) (€)', round2(r.requiredAdr)],
+            ['Başabaş Doluluk Oranı (%)', round2(r.breakevenOcc)]
+        ];
+
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(inputs), 'Girişler');
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(results), 'Sonuçlar');
+
+        const d = new Date();
+        const pad = n => String(n).padStart(2, '0');
+        const fname = `Otel-Butce-${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}.xlsx`;
+        XLSX.writeFile(wb, fname);
     }
 
     // ============ N8N WEBHOOK ENTEGRASYONU ============
