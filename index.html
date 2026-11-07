@@ -258,10 +258,6 @@
                     <input type="number" id="fbCostPerPerson" value="12" min="0" oninput="calculate()">
                 </div>
                 <div class="form-group">
-                    <label for="roomVarCost">Oda Başına Günlük Temizlik/Enerji/Sarf Maliyeti (€)</label>
-                    <input type="number" id="roomVarCost" value="8" min="0" oninput="calculate()">
-                </div>
-                <div class="form-group">
                     <label for="elecCost">Sezonluk Elektrik Gideri (Toplam - €)</label>
                     <input type="number" id="elecCost" value="0" min="0" oninput="calculate()">
                 </div>
@@ -311,7 +307,6 @@
                     <tr class="highlight-row"><td>Toplam Brüt Ciro</td><td id="resTotalRevenue">€ 0</td></tr>
                     <tr><td>Toplam Personel Maliyeti</td><td id="resStaffExpense">€ 0</td></tr>
                     <tr><td>Toplam Yiyecek & İçecek (F&B) Maliyeti</td><td id="resFbExpense">€ 0</td></tr>
-                    <tr><td>Oda Bazlı Değişken Maliyetler</td><td id="resVarExpense">€ 0</td></tr>
                     <tr><td>Sezonluk Elektrik Gideri</td><td id="resElecExpense">€ 0</td></tr>
                     <tr><td>Sezonluk Su Gideri</td><td id="resWaterExpense">€ 0</td></tr>
                     <tr><td>Sezonluk LNG / Doğalgaz Gideri</td><td id="resLngExpense">€ 0</td></tr>
@@ -547,7 +542,6 @@
         const staffCostMonthly = parseFloat(document.getElementById('staffCost').value) || 0;
         const extraSpend = parseFloat(document.getElementById('extraSpend').value) || 0;
         const fbCostPerPerson = parseFloat(document.getElementById('fbCostPerPerson').value) || 0;
-        const roomVarCost = parseFloat(document.getElementById('roomVarCost').value) || 0;
         const elecCost = parseFloat(document.getElementById('elecCost').value) || 0;
         const waterCost = parseFloat(document.getElementById('waterCost').value) || 0;
         const lngCost = parseFloat(document.getElementById('lngCost').value) || 0;
@@ -580,7 +574,6 @@
         const expenseMonths = expenseMode === 'year' ? 12 : seasonMonths;
 
         const totalFbExpense = totalGuests * fbCostPerPerson;
-        const totalVarExpense = occupiedNights * roomVarCost;
         const totalFixedExpense = monthlyFixedCost * expenseMonths;
         const annualDepreciation = totalInvestment * (annualDepreciationRate / 100);
         const seasonDepreciationExpense = annualDepreciation * (expenseMonths / 12);
@@ -588,7 +581,7 @@
         const totalUtilityExpense = elecCost + waterCost + lngCost;
         const utilityPerNight = occupiedNights > 0 ? totalUtilityExpense / occupiedNights : 0;
 
-        const totalExpense = totalStaffExpense + totalFbExpense + totalVarExpense + totalFixedExpense + seasonDepreciationExpense + totalUtilityExpense;
+        const totalExpense = totalStaffExpense + totalFbExpense + totalFixedExpense + seasonDepreciationExpense + totalUtilityExpense;
 
         const extraRevenue = totalGuests * extraSpend;
         const rentalRevenue = rentals.reduce((sum, r) => sum + (r.amount || 0), 0);
@@ -607,7 +600,7 @@
             if (requiredAdr < 0) requiredAdr = 0;
         }
 
-        const variableCostPerNight = (totalFbExpense + totalVarExpense) / (occupiedNights || 1);
+        const variableCostPerNight = totalFbExpense / (occupiedNights || 1);
         const avgAdr = occupiedNights > 0 ? roomRevenue / occupiedNights : 0;
         const marginalContributionPerNight = avgAdr + (extraSpend * avgGuests) - variableCostPerNight;
         let breakevenOcc = 0;
@@ -633,7 +626,6 @@
         document.getElementById('resTotalRevenue').innerText = '€ ' + totalRevenue.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
         document.getElementById('resStaffExpense').innerText = '€ ' + totalStaffExpense.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
         document.getElementById('resFbExpense').innerText = '€ ' + totalFbExpense.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-        document.getElementById('resVarExpense').innerText = '€ ' + totalVarExpense.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
         document.getElementById('resElecExpense').innerText = '€ ' + elecCost.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
         document.getElementById('resWaterExpense').innerText = '€ ' + waterCost.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
         document.getElementById('resLngExpense').innerText = '€ ' + lngCost.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
@@ -659,7 +651,7 @@
             rooms, totalPossibleNights, occupiedNights, totalGuests,
             avgOccupancy: totalPossibleNights > 0 ? (occupiedNights / totalPossibleNights) * 100 : 0,
             roomRevenue, extraRevenue, rentalRevenue, totalRevenue,
-            totalStaffExpense, totalFbExpense, totalVarExpense, totalFixedExpense,
+            totalStaffExpense, totalFbExpense, totalFixedExpense,
             seasonDepreciationExpense, totalUtilityExpense, elecCost, waterCost, lngCost,
             utilityPerNight, totalExpense,
             preTaxProfit, taxAmount, netProfit, requiredAdr, breakevenOcc
@@ -739,7 +731,6 @@
             ['Kişibaşı Günlük Ekstra Harcama (€)', num('extraSpend')],
             ['Sabit Gider ve Amortisman Dönemi', selText('expenseMode')],
             ['Kişibaşı Günlük F&B Hammadde Maliyeti (€)', num('fbCostPerPerson')],
-            ['Oda Başına Günlük Temizlik/Enerji/Sarf Maliyeti (€)', num('roomVarCost')],
             ['Sezonluk Elektrik Gideri (Toplam - €)', num('elecCost')],
             ['Sezonluk Su Gideri (Toplam - €)', num('waterCost')],
             ['Sezonluk LNG / Doğalgaz Gideri (Toplam - €)', num('lngCost')],
@@ -780,7 +771,6 @@
             ['Toplam Brüt Ciro (€)', round2(r.totalRevenue)],
             ['Toplam Personel Maliyeti (€)', round2(r.totalStaffExpense)],
             ['Toplam Yiyecek & İçecek (F&B) Maliyeti (€)', round2(r.totalFbExpense)],
-            ['Oda Bazlı Değişken Maliyetler (€)', round2(r.totalVarExpense)],
             ['Sezonluk Elektrik Gideri (€)', round2(r.elecCost)],
             ['Sezonluk Su Gideri (€)', round2(r.waterCost)],
             ['Sezonluk LNG / Doğalgaz Gideri (€)', round2(r.lngCost)],
@@ -833,7 +823,6 @@
                     extraSpend: document.getElementById('extraSpend').value,
                     expenseMode: document.getElementById('expenseMode').value,
                     fbCostPerPerson: document.getElementById('fbCostPerPerson').value,
-                    roomVarCost: document.getElementById('roomVarCost').value,
                     elecCost: document.getElementById('elecCost').value,
                     waterCost: document.getElementById('waterCost').value,
                     lngCost: document.getElementById('lngCost').value,
@@ -999,7 +988,6 @@
             document.getElementById('extraSpend').value = d.extraSpend;
             document.getElementById('expenseMode').value = d.expenseMode;
             document.getElementById('fbCostPerPerson').value = d.fbCostPerPerson;
-            document.getElementById('roomVarCost').value = d.roomVarCost;
             document.getElementById('elecCost').value = d.elecCost || 0;
             document.getElementById('waterCost').value = d.waterCost || 0;
             document.getElementById('lngCost').value = d.lngCost || 0;
