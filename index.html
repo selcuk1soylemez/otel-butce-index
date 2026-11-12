@@ -373,8 +373,8 @@
     <div class="modal">
         <h2 id="loginTitle">🔐 Giriş Yap</h2>
         <div class="form-group">
-            <label for="loginPassword">Şifre (Telefon numarası sonu nokta ile)</label>
-            <input type="password" id="loginPassword" placeholder="Örn: 05322427357." autocomplete="off">
+            <label for="loginPassword">Şifrenizi girin</label>
+            <input type="password" id="loginPassword" placeholder="Şifrenizi girin" autocomplete="off">
         </div>
         <button type="button" class="btn-save" onclick="doLogin()">Giriş Yap</button>
         <div class="error" id="loginError"></div>
@@ -1124,6 +1124,10 @@
         renderSeasons();
         calculate();
         refreshSavedList();
+        // Sayfa açıldığında giriş modalını göster (eğer giriş yapılmamışsa)
+        if (!authToken) {
+            document.getElementById('loginModal').classList.remove('hidden');
+        }
     };
 </script>
 </body>
