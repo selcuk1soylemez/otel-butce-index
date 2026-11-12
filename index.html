@@ -4,6 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profesyonel Otel Bütçe ve Kârlılık Simülatörü</title>
+    <meta name="description" content="Amortisman ve hedef odaklı gelişmiş otel bütçe simülatörü. Sezonluk finansal analiz, kârlılık hesaplama ve Excel aktarımı.">
+    <meta property="og:title" content="Otel Bütçe ve Kârlılık Simülatörü">
+    <meta property="og:description" content="Profesyonel otel bütçe simülasyon aracı. Hedef kâr, doluluk, ADR ve maliyet parametreleriyle sezonluk analiz.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://selcuk1soylemez.github.io/otel-butce-index/">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Otel Bütçe ve Kârlılık Simülatörü">
+    <meta name="twitter:description" content="Profesyonel otel bütçe simülasyon aracı.">
+    <link rel="canonical" href="https://selcuk1soylemez.github.io/otel-butce-index/">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Otel Bütçe ve Kârlılık Simülatörü",
+        "description": "Amortisman ve hedef odaklı gelişmiş otel bütçe simülatörü",
+        "applicationCategory": "BusinessApplication",
+        "operatingSystem": "Web",
+        "offers": {"@type": "Offer", "price": "0", "priceCurrency": "EUR"}
+    }
+    </script>
     <style>
         :root {
             --primary: #2563eb;
@@ -15,6 +35,7 @@
             --card-bg: #ffffff;
             --text: #1e293b;
             --border: #cbd5e1;
+            --text-muted: #64748b;
         }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -25,7 +46,7 @@
         }
         .container { max-width: 1200px; margin: 0 auto; }
         h1 { text-align: center; color: var(--primary-dark); margin-bottom: 5px; }
-        p.subtitle { text-align: center; color: #64748b; margin-top: 0; margin-bottom: 30px; }
+        p.subtitle { text-align: center; color: var(--text-muted); margin-top: 0; margin-bottom: 30px; }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
         .card {
@@ -37,7 +58,7 @@
             padding-bottom: 10px; color: var(--primary);
             display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;
         }
-        .card h2.target-title { color: var(--warning); }
+        .card h2.target-title { color: #b45309; }
         .form-group { margin-bottom: 15px; }
         label { display: block; font-weight: 600; font-size: 0.9rem; margin-bottom: 5px; }
         input, select {
@@ -48,9 +69,8 @@
             outline: none; border-color: var(--primary);
             box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
         }
-        input[readonly] { background-color: #f1f5f9; color: #64748b; cursor: not-allowed; }
+        input[readonly] { background-color: #f1f5f9; color: var(--text-muted); cursor: not-allowed; }
         .target-box { background-color: #fffbeb; border: 1px solid #fde68a; }
-        
         .input-group { display: flex; align-items: stretch; width: 100%; }
         .input-group button {
             width: 45px; background: #e2e8f0; border: 1px solid var(--border);
@@ -61,7 +81,6 @@
         .input-group button:first-child { border-radius: 6px 0 0 6px; border-right: none; }
         .input-group button:last-child { border-radius: 0 6px 6px 0; border-left: none; }
         .input-group input { border-radius: 0; text-align: center; flex: 1; font-weight: 600; }
-        
         .results-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         .results-table th, .results-table td {
             padding: 10px 12px; text-align: left;
@@ -72,7 +91,6 @@
         .target-row { background-color: #fef3c7; font-weight: bold; color: #b45309; }
         .profit-positive { color: var(--success); }
         .profit-negative { color: var(--danger); }
-        
         .season-row {
             display: grid; grid-template-columns: 1.1fr 1.1fr 0.7fr 0.9fr 1.1fr 1fr auto;
             gap: 8px; margin-bottom: 10px; align-items: end;
@@ -80,33 +98,29 @@
         }
         .season-row input { padding: 8px; font-size: 0.85rem; }
         .season-row label {
-            font-size: 0.7rem; color: #64748b; margin-bottom: 3px;
+            font-size: 0.7rem; color: var(--text-muted); margin-bottom: 3px;
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
-        
         .room-type-row {
             display: grid; grid-template-columns: 2fr 1fr auto;
             gap: 8px; margin-bottom: 10px; align-items: end;
             padding-bottom: 10px; border-bottom: 1px dashed var(--border);
         }
         .room-type-row input { padding: 8px; font-size: 0.9rem; }
-        .room-type-row label { font-size: 0.75rem; color: #64748b; margin-bottom: 3px; }
-        
+        .room-type-row label { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 3px; }
         .rental-row {
             display: grid; grid-template-columns: 3fr 1.5fr auto;
             gap: 8px; margin-bottom: 10px; align-items: end;
             padding-bottom: 10px; border-bottom: 1px dashed var(--border);
         }
         .rental-row input { padding: 8px; font-size: 0.9rem; }
-        .rental-row label { font-size: 0.75rem; color: #64748b; margin-bottom: 3px; }
-        
+        .rental-row label { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 3px; }
         .total-rooms-display {
             background: #eff6ff; border: 1px solid #bfdbfe;
             padding: 12px; border-radius: 6px; margin-top: 15px;
             text-align: center; font-weight: bold; color: var(--primary-dark);
         }
         .total-rooms-display span { font-size: 1.3rem; }
-        
         .btn-add-season {
             width: 100%; padding: 10px; background-color: var(--primary);
             color: white; border: none; border-radius: 6px; cursor: pointer;
@@ -118,7 +132,6 @@
             border-radius: 6px; padding: 8px 10px; cursor: pointer;
             height: 36px; font-weight: bold;
         }
-        
         .btn-save {
             width: 100%; padding: 14px; background-color: var(--success);
             color: white; border: none; border-radius: 6px; cursor: pointer;
@@ -126,12 +139,10 @@
             transition: background 0.2s;
         }
         .btn-save:hover { background-color: #15803d; }
-
         .btn-row { display: flex; gap: 10px; margin-top: 20px; }
         .btn-row .btn-save { margin-top: 0; flex: 1; width: auto; }
         .btn-excel { background-color: var(--primary); }
         .btn-excel:hover { background-color: var(--primary-dark); }
-
         .saved-item {
             display: grid; grid-template-columns: 1fr auto auto;
             gap: 8px; align-items: center; padding: 12px;
@@ -140,7 +151,7 @@
         }
         .saved-item .saved-info { display: flex; flex-direction: column; gap: 3px; }
         .saved-item .saved-name { font-weight: bold; font-size: 0.95rem; }
-        .saved-item .saved-date { font-size: 0.75rem; color: #64748b; }
+        .saved-item .saved-date { font-size: 0.75rem; color: var(--text-muted); }
         .btn-load {
             background-color: var(--primary); color: white; border: none;
             border-radius: 6px; padding: 8px 14px; cursor: pointer;
@@ -153,21 +164,35 @@
             font-weight: bold; font-size: 0.85rem;
         }
         .btn-del:hover { background-color: #b91c1c; }
-        
         .btn-small {
             padding: 5px 10px; font-size: 0.75rem; border-radius: 4px;
             border: 1px solid var(--border); background: white; cursor: pointer;
             font-weight: 600; color: var(--text);
         }
         .btn-small:hover { background: #f1f5f9; }
-        
         .empty-state {
-            text-align: center; padding: 25px; color: #64748b;
+            text-align: center; padding: 25px; color: var(--text-muted);
             background: #f8fafc; border-radius: 6px; border: 1px dashed var(--border);
         }
         .empty-state p { margin: 5px 0; }
         .empty-state .hint { font-size: 0.8rem; color: #94a3b8; }
-        
+        /* Login modal */
+        .modal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 1000; padding: 20px;
+        }
+        .modal-overlay.hidden { display: none; }
+        .modal {
+            background: var(--card-bg); border-radius: 12px; padding: 30px;
+            max-width: 400px; width: 100%; box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+        }
+        .modal h2 { margin-top: 0; text-align: center; color: var(--primary-dark); }
+        .modal .form-group { margin-bottom: 15px; }
+        .modal label { font-size: 0.9rem; }
+        .modal input { padding: 12px; font-size: 1rem; }
+        .modal .btn-save { width: 100%; margin-top: 10px; }
+        .modal .error { color: var(--danger); font-size: 0.85rem; margin-top: 8px; text-align: center; min-height: 20px; }
         @media (max-width: 1100px) {
             .season-row {
                 grid-template-columns: 1fr 1fr; background: #f8fafc;
@@ -199,9 +224,9 @@
                 <div class="form-group">
                     <label for="avgGuests">Ortalama Oda Başına Misafir Sayısı</label>
                     <div class="input-group">
-                        <button type="button" onclick="decrementGuests()">−</button>
-                        <input type="text" id="avgGuests" value="2" oninput="calculate()" inputmode="decimal">
-                        <button type="button" onclick="incrementGuests()">+</button>
+                        <button type="button" onclick="decrementGuests()" aria-label="Misafir sayısını azalt">−</button>
+                        <input type="text" id="avgGuests" value="2" oninput="calculate()" inputmode="decimal" aria-label="Ortalama oda başına misafir sayısı">
+                        <button type="button" onclick="incrementGuests()" aria-label="Misafir sayısını artır">+</button>
                     </div>
                 </div>
                 <div class="form-group">
@@ -227,7 +252,6 @@
                 <h2>4. Sezonlar, Fiyatlandırma ve Personel</h2>
                 <div id="seasons-container"></div>
                 <button type="button" class="btn-add-season" onclick="addSeason()">+ Yeni Sezon Ekle</button>
-                
                 <div class="form-group" style="margin-top: 20px;">
                     <label for="concept">Otel Konsepti</label>
                     <select id="concept" onchange="calculate()">
@@ -270,8 +294,8 @@
                     <input type="number" id="lngCost" value="0" min="0" oninput="calculate()">
                 </div>
                 <div class="form-group">
-                    <label>Elektrik + Su + LNG Ort. Gerçekleşen Oda Gecesi Başı (€) <span style="color:#94a3b8; font-weight:normal;">— otomatik, müdahale edilemez</span></label>
-                    <input type="text" id="utilityPerNight" value="0,00" readonly tabindex="-1">
+                    <label>Elektrik + Su + LNG Ort. Gerçekleşen Oda Gecesi Başı (€) <span style="color:var(--text-muted); font-weight:normal;">— otomatik, müdahale edilemez</span></label>
+                    <input type="text" id="utilityPerNight" value="0,00" readonly tabindex="-1" aria-label="Oda gecesi başına ortalama enerji gideri">
                 </div>
                 <div class="form-group">
                     <label for="fixedCost">Aylık Sabit Genel Giderler (Kira, Bakım, Lisans vb. - €)</label>
@@ -310,8 +334,8 @@
                     <tr><td>Sezonluk Elektrik Gideri</td><td id="resElecExpense">€ 0</td></tr>
                     <tr><td>Sezonluk Su Gideri</td><td id="resWaterExpense">€ 0</td></tr>
                     <tr><td>Sezonluk LNG / Doğalgaz Gideri</td><td id="resLngExpense">€ 0</td></tr>
-                    <tr><td>Toplam Sabit Giderler <span id="fixedPeriodLabel" style="font-size:0.8rem; color:#64748b;">(Yıllık)</span></td><td id="resFixedExpense">€ 0</td></tr>
-                    <tr><td>Amortisman (Eskime Payı) Gideri <span id="deprPeriodLabel" style="font-size:0.8rem; color:#64748b;">(Yıllık)</span></td><td id="resDepreciationExpense">€ 0</td></tr>
+                    <tr><td>Toplam Sabit Giderler <span id="fixedPeriodLabel" style="font-size:0.8rem; color:var(--text-muted);">(Yıllık)</span></td><td id="resFixedExpense">€ 0</td></tr>
+                    <tr><td>Amortisman (Eskime Payı) Gideri <span id="deprPeriodLabel" style="font-size:0.8rem; color:var(--text-muted);">(Yıllık)</span></td><td id="resDepreciationExpense">€ 0</td></tr>
                     <tr class="highlight-row"><td>Toplam İşletme Maliyeti</td><td id="resTotalExpense">€ 0</td></tr>
                     <tr class="highlight-row" style="font-size: 1.05rem;"><td>Vergi Öncesi Kâr / (Zarar)</td><td id="resPreTaxProfit">€ 0</td></tr>
                     <tr><td>Kurumlar Vergisi Tutarı</td><td id="resTaxAmount">€ 0</td></tr>
@@ -319,7 +343,6 @@
                     <tr class="target-row" style="font-size: 1.15rem;"><td>🎯 Hedef Kâr İçin Gereken Ort. Oda Fiyatı (ADR)</td><td id="resTargetAdr">€ 0</td></tr>
                     <tr><td>Başabaş Doluluk Oranı</td><td id="resBreakevenOcc">-%</td></tr>
                 </table>
-                
                 <div class="btn-row">
                     <button type="button" class="btn-save" onclick="saveCalculation()">💾 Bu Hesaplamayı Kaydet</button>
                     <button type="button" class="btn-save btn-excel" onclick="exportToExcel()">📊 Excel'e Aktar</button>
@@ -332,21 +355,39 @@
     <div class="card">
         <h2>
             📁 Kayıtlı Hesaplamalar
-            <span style="font-size: 0.9rem; font-weight: normal; color: #64748b;">
+            <span style="font-size: 0.9rem; font-weight: normal; color: var(--text-muted);">
                 (<span id="savedCount">0</span> kayıt)
-                <button type="button" class="btn-small" onclick="refreshSavedList()" title="Yenile">🔄 Yenile</button>
+                <button type="button" class="btn-small" onclick="refreshSavedList()" title="Yenile" aria-label="Kayıtları yenile">🔄 Yenile</button>
             </span>
         </h2>
         <div id="saved-list">
             <div class="empty-state">
-                <p>⏳ Kayıtlar yükleniyor...</p>
+                <p>🔐 Kayıtları görmek için giriş yapın.</p>
             </div>
         </div>
     </div>
 </div>
 
-<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js" integrity="sha384-EnyY0/GSHQGSxSgMwaIPzSESbqoOLSexfnSMN2AP+39Ckmn92stwABZynq1JyzdT" crossorigin="anonymous"></script>
+<!-- Giriş Modalı -->
+<div class="modal-overlay hidden" id="loginModal" role="dialog" aria-labelledby="loginTitle" aria-modal="true">
+    <div class="modal">
+        <h2 id="loginTitle">🔐 Giriş Yap</h2>
+        <div class="form-group">
+            <label for="loginPassword">Şifre (Telefon numarası sonu nokta ile)</label>
+            <input type="password" id="loginPassword" placeholder="Örn: 05322427357." autocomplete="off">
+        </div>
+        <button type="button" class="btn-save" onclick="doLogin()">Giriş Yap</button>
+        <div class="error" id="loginError"></div>
+    </div>
+</div>
+
 <script>
+    // ============ API CONFIG ============
+    const API_BASE = 'https://otel-butce.doguu0.workers.dev';
+    let authToken = null;
+    let currentUser = null;
+    let savedCalculationsCache = [];
+
     // ============ YARDIMCI FONKSİYONLAR ============
     function parseNum(val) {
         if (typeof val === 'number') return val;
@@ -369,6 +410,43 @@
         calculate();
     }
 
+    // ============ VALIDASYON ============
+    function validateSeasonInputs(season) {
+        const errors = [];
+        if (season.occupancy < 1 || season.occupancy > 100) {
+            errors.push('Doluluk oranı 1-100 arası olmalı');
+        }
+        if (season.adr < 0) {
+            errors.push('ADR (fiyat) negatif olamaz');
+        }
+        if (season.staffCount < 0) {
+            errors.push('Personel sayısı negatif olamaz');
+        }
+        const days = calculateDaysBetween(season.startDate, season.endDate);
+        if (days <= 0) {
+            errors.push('Sezon tarihleri geçersiz (bitiş başlangıçtan sonra olmalı)');
+        }
+        return errors;
+    }
+
+    function validateAllInputs() {
+        const errors = [];
+        seasons.forEach((s, i) => {
+            const se = validateSeasonInputs(s);
+            if (se.length) errors.push(`Sezon ${i+1}: ${se.join(', ')}`);
+        });
+        roomTypes.forEach((rt, i) => {
+            if ((rt.count || 0) < 0) errors.push(`Oda tipi ${i+1}: oda sayısı negatif olamaz`);
+        });
+        rentals.forEach((r, i) => {
+            if ((r.amount || 0) < 0) errors.push(`Gelir ${i+1}: tutar negatif olamaz`);
+        });
+        const totalRooms = roomTypes.reduce((sum, rt) => sum + (rt.count || 0), 0);
+        if (totalRooms === 0) errors.push('En az 1 oda olmalı');
+        if (seasons.length === 0) errors.push('En az 1 sezon olmalı');
+        return errors;
+    }
+
     // ============ ODA TİPLERİ ============
     let roomTypes = [
         { id: 0, name: "Standart Oda", count: 70 },
@@ -384,11 +462,11 @@
             const div = document.createElement('div');
             div.className = 'room-type-row';
             div.innerHTML = `
-                <div><label>Oda Tipi Adı</label>
-                <input type="text" value="${rt.name}" oninput="updateRoomType(${index}, 'name', this.value)"></div>
-                <div><label>Oda Sayısı</label>
-                <input type="number" value="${rt.count}" oninput="updateRoomType(${index}, 'count', this.value)" min="0"></div>
-                <div><button type="button" class="btn-remove-season" onclick="removeRoomType(${index})">X</button></div>
+                <div><label for="roomTypeName${index}">Oda Tipi Adı</label>
+                <input type="text" id="roomTypeName${index}" value="${rt.name}" oninput="updateRoomType(${index}, 'name', this.value)"></div>
+                <div><label for="roomTypeCount${index}">Oda Sayısı</label>
+                <input type="number" id="roomTypeCount${index}" value="${rt.count}" oninput="updateRoomType(${index}, 'count', this.value)" min="0"></div>
+                <div><button type="button" class="btn-remove-season" onclick="removeRoomType(${index})" aria-label="Oda tipini sil">X</button></div>
             `;
             container.appendChild(div);
         });
@@ -430,11 +508,11 @@
             const div = document.createElement('div');
             div.className = 'rental-row';
             div.innerHTML = `
-                <div><label>Gelir Açıklaması</label>
-                <input type="text" value="${r.name}" oninput="updateRental(${index}, 'name', this.value)" placeholder="Örn: Dükkan Kirası"></div>
-                <div><label>Yıllık Gelir (€)</label>
-                <input type="number" value="${r.amount}" oninput="updateRental(${index}, 'amount', this.value)" min="0"></div>
-                <div><button type="button" class="btn-remove-season" onclick="removeRental(${index})">X</button></div>
+                <div><label for="rentalName${index}">Gelir Açıklaması</label>
+                <input type="text" id="rentalName${index}" value="${r.name}" oninput="updateRental(${index}, 'name', this.value)" placeholder="Örn: Dükkan Kirası"></div>
+                <div><label for="rentalAmount${index}">Yıllık Gelir (€)</label>
+                <input type="number" id="rentalAmount${index}" value="${r.amount}" oninput="updateRental(${index}, 'amount', this.value)" min="0"></div>
+                <div><button type="button" class="btn-remove-season" onclick="removeRental(${index})" aria-label="Gelir kalemini sil">X</button></div>
             `;
             container.appendChild(div);
         });
@@ -482,19 +560,19 @@
             div.className = 'season-row';
             const days = calculateDaysBetween(season.startDate, season.endDate);
             div.innerHTML = `
-                <div><label>Başlangıç Tarihi</label>
-                <input type="date" value="${season.startDate}" onchange="updateSeasonDate(${index}, 'startDate', this.value)"></div>
-                <div><label>Bitiş Tarihi</label>
-                <input type="date" value="${season.endDate}" onchange="updateSeasonDate(${index}, 'endDate', this.value)"></div>
+                <div><label for="seasonStart${index}">Başlangıç Tarihi</label>
+                <input type="date" id="seasonStart${index}" value="${season.startDate}" onchange="updateSeasonDate(${index}, 'startDate', this.value)"></div>
+                <div><label for="seasonEnd${index}">Bitiş Tarihi</label>
+                <input type="date" id="seasonEnd${index}" value="${season.endDate}" onchange="updateSeasonDate(${index}, 'endDate', this.value)"></div>
                 <div><label>Gün</label>
                 <input type="number" value="${days}" readonly></div>
-                <div><label>Doluluk (%)</label>
-                <input type="number" value="${season.occupancy}" oninput="updateSeasonNumber(${index}, 'occupancy', this.value)" min="1" max="100"></div>
-                <div><label>Fiyat (ADR €)</label>
-                <input type="number" value="${season.adr}" oninput="updateSeasonNumber(${index}, 'adr', this.value)" min="0"></div>
-                <div><label>Personel Sayısı</label>
-                <input type="number" value="${season.staffCount}" oninput="updateSeasonNumber(${index}, 'staffCount', this.value)" min="0"></div>
-                <div><button type="button" class="btn-remove-season" onclick="removeSeason(${index})">X</button></div>
+                <div><label for="seasonOcc${index}">Doluluk (%)</label>
+                <input type="number" id="seasonOcc${index}" value="${season.occupancy}" oninput="updateSeasonNumber(${index}, 'occupancy', this.value)" min="1" max="100"></div>
+                <div><label for="seasonAdr${index}">Fiyat (ADR €)</label>
+                <input type="number" id="seasonAdr${index}" value="${season.adr}" oninput="updateSeasonNumber(${index}, 'adr', this.value)" min="0"></div>
+                <div><label for="seasonStaff${index}">Personel Sayısı</label>
+                <input type="number" id="seasonStaff${index}" value="${season.staffCount}" oninput="updateSeasonNumber(${index}, 'staffCount', this.value)" min="0"></div>
+                <div><button type="button" class="btn-remove-season" onclick="removeSeason(${index})" aria-label="Sezonu sil">X</button></div>
             `;
             container.appendChild(div);
         });
@@ -537,6 +615,11 @@
     let lastResults = {};
 
     function calculate() {
+        const validationErrors = validateAllInputs();
+        if (validationErrors.length) {
+            console.warn('Validation errors:', validationErrors);
+        }
+
         const targetNetProfit = parseFloat(document.getElementById('targetNetProfit').value) || 0;
         const avgGuests = parseNum(document.getElementById('avgGuests').value) || 1;
         const staffCostMonthly = parseFloat(document.getElementById('staffCost').value) || 0;
@@ -658,8 +741,113 @@
         };
     }
 
-    // ============ EXCEL DIŞA AKTARIM ============
-    // Sayı hücrelerine görünüm maskesi (binlik ayraç + ondalık) uygular
+    // ============ EXCEL DIŞA AKTARIM (Lazy SheetJS) ============
+    async function exportToExcel() {
+        try {
+            // Lazy load SheetJS
+            if (typeof XLSX === 'undefined') {
+                const script = document.createElement('script');
+                script.src = 'https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js';
+                script.integrity = 'sha384-EnyY0/GSHQGSxSgMwaIPzSESbqoOLSexfnSMN2AP+39Ckmn92stwABZynq1JyzdT';
+                script.crossOrigin = 'anonymous';
+                await new Promise((resolve, reject) => {
+                    script.onload = resolve;
+                    script.onerror = () => reject(new Error('SheetJS yüklenemedi'));
+                    document.head.appendChild(script);
+                });
+            }
+
+            const num = id => parseNum(document.getElementById(id).value);
+            const selText = id => {
+                const el = document.getElementById(id);
+                return el.options[el.selectedIndex].text;
+            };
+            const round2 = v => Math.round((v || 0) * 100) / 100;
+            const r = lastResults;
+
+            const inputs = [
+                ['OTEL BÜTÇE VE KÂRLILIK SİMÜLATÖRÜ — GİRİŞ DEĞERLERİ'],
+                ['Aktarım Tarihi', new Date().toLocaleString('tr-TR')],
+                [],
+                ['GENEL PARAMETRELER', 'Değer'],
+                ['Hedeflenen Net Kâr (€)', num('targetNetProfit')],
+                ['Ortalama Oda Başına Misafir Sayısı', num('avgGuests')],
+                ['Personel Başına Aylık Giydirilmiş Maliyet (€)', num('staffCost')],
+                ['Otel Konsepti', selText('concept')],
+                ['Kişibaşı Günlük Ekstra Harcama (€)', num('extraSpend')],
+                ['Sabit Gider ve Amortisman Dönemi', selText('expenseMode')],
+                ['Kişibaşı Günlük F&B Hammadde Maliyeti (€)', num('fbCostPerPerson')],
+                ['Sezonluk Elektrik Gideri (Toplam - €)', num('elecCost')],
+                ['Sezonluk Su Gideri (Toplam - €)', num('waterCost')],
+                ['Sezonluk LNG / Doğalgaz Gideri (Toplam - €)', num('lngCost')],
+                ['Elektrik + Su + LNG Ort. Gerçekleşen Oda Gecesi Başı (€) (Otomatik)', round2(r.utilityPerNight)],
+                ['Aylık Sabit Genel Giderler (€)', num('fixedCost')],
+                ['Toplam Yatırım Değeri (€)', num('totalInvestment')],
+                ['Yıllık Amortisman / Eskime Payı Oranı (%)', num('depreciationRate')],
+                ['Kurumlar Vergisi Oranı (%)', num('taxRate')],
+                [],
+                ['ODA TİPLERİ', 'Oda Sayısı'],
+                ...roomTypes.map(rt => [rt.name, rt.count || 0]),
+                ['Toplam Oda Sayısı', roomTypes.reduce((s, rt) => s + (rt.count || 0), 0)],
+                [],
+                ['KİRA VE DİĞER YILLIK GELİRLER', 'Yıllık Tutar (€)'],
+                ...rentals.map(rn => [rn.name, rn.amount || 0]),
+                ['Toplam Kira Geliri', rentals.reduce((s, rn) => s + (rn.amount || 0), 0)],
+                [],
+                ['SEZONLAR'],
+                ['Başlangıç', 'Bitiş', 'Gün', 'Doluluk (%)', 'ADR (€)', 'Personel Sayısı'],
+                ...seasons.map(s => [
+                    s.startDate, s.endDate,
+                    calculateDaysBetween(s.startDate, s.endDate),
+                    s.occupancy, s.adr, s.staffCount
+                ])
+            ];
+
+            const results = [
+                ['SEZONLUK FİNANSAL ÖZET VE HEDEF ANALİZİ', 'Değer'],
+                ['Toplam Oda Sayısı', r.rooms || 0],
+                ['Toplam Satılabilir Oda Geceleme', r.totalPossibleNights || 0],
+                ['Gerçekleşen Konaklayan Geceleme (Doluluk ile)', r.occupiedNights || 0],
+                ['Ortalama Doluluk (%)', round2(r.avgOccupancy)],
+                ['Toplam Misafir Sayısı (Tahmini)', r.totalGuests || 0],
+                ['Toplam Oda Geliri (€)', round2(r.roomRevenue)],
+                ['Toplam Ekstra Gelirler (€)', round2(r.extraRevenue)],
+                ['Kira ve Diğer Yıllık Gelirler (€)', round2(r.rentalRevenue)],
+                ['Toplam Brüt Ciro (€)', round2(r.totalRevenue)],
+                ['Toplam Personel Maliyeti (€)', round2(r.totalStaffExpense)],
+                ['Toplam Yiyecek & İçecek (F&B) Maliyeti (€)', round2(r.totalFbExpense)],
+                ['Sezonluk Elektrik Gideri (€)', round2(r.elecCost)],
+                ['Sezonluk Su Gideri (€)', round2(r.waterCost)],
+                ['Sezonluk LNG / Doğalgaz Gideri (€)', round2(r.lngCost)],
+                ['Elektrik + Su + LNG Ort. Gerçekleşen Oda Gecesi Başı (€)', round2(r.utilityPerNight)],
+                ['Toplam Sabit Giderler (€)', round2(r.totalFixedExpense)],
+                ['Amortisman (Eskime Payı) Gideri (€)', round2(r.seasonDepreciationExpense)],
+                ['Toplam İşletme Maliyeti (€)', round2(r.totalExpense)],
+                ['Vergi Öncesi Kâr / (Zarar) (€)', round2(r.preTaxProfit)],
+                ['Kurumlar Vergisi Tutarı (€)', round2(r.taxAmount)],
+                ['Sezon Sonu Net Kâr / (Zarar) (€)', round2(r.netProfit)],
+                ['Hedef Kâr İçin Gereken Ort. Oda Fiyatı (ADR) (€)', round2(r.requiredAdr)],
+                ['Başabaş Doluluk Oranı (%)', round2(r.breakevenOcc)]
+            ];
+
+            const wb = XLSX.utils.book_new();
+            const wsInputs = XLSX.utils.aoa_to_sheet(inputs);
+            const wsResults = XLSX.utils.aoa_to_sheet(results);
+            applyNumberMasks(wsInputs);
+            applyNumberMasks(wsResults);
+            XLSX.utils.book_append_sheet(wb, wsInputs, 'Girişler');
+            XLSX.utils.book_append_sheet(wb, wsResults, 'Sonuçlar');
+
+            const d = new Date();
+            const pad = n => String(n).padStart(2, '0');
+            const fname = `Otel-Butce-${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}.xlsx`;
+            XLSX.writeFile(wb, fname);
+        } catch (e) {
+            console.error('[ERROR] exportToExcel:', e);
+            alert('❌ Excel oluşturulurken hata: ' + e.message);
+        }
+    }
+
     function applyNumberMasks(ws) {
         if (!ws || !ws['!ref']) return;
         const range = XLSX.utils.decode_range(ws['!ref']);
@@ -684,7 +872,6 @@
                 const cell = ws[XLSX.utils.encode_cell({ c: C, r: R })];
                 if (!cell || typeof cell.v !== 'number') continue;
                 if (isSeasonRow) {
-                    // A:başlangıç B:bitiş C:gün D:doluluk E:ADR F:personel
                     if (C === 2) cell.z = INTEGER;
                     else if (C === 3) cell.z = PERCENT;
                     else if (C === 4) cell.z = MONEY;
@@ -704,106 +891,50 @@
         }
     }
 
-    function exportToExcel() {
-        if (typeof XLSX === 'undefined') {
-            alert('❌ Excel kütüphanesi yüklenemedi.\nİnternet bağlantısını kontrol edip sayfayı yenileyin.');
-            return;
-        }
-
-        const num = id => parseNum(document.getElementById(id).value);
-        const selText = id => {
-            const el = document.getElementById(id);
-            return el.options[el.selectedIndex].text;
+    // ============ AUTH & API ============
+    function getAuthHeaders() {
+        return {
+            'Content-Type': 'application/json',
+            ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {})
         };
-        const round2 = v => Math.round((v || 0) * 100) / 100;
-        const r = lastResults;
-
-        // Sayfa 1: Tüm giriş değerleri
-        const inputs = [
-            ['OTEL BÜTÇE VE KÂRLILIK SİMÜLATÖRÜ — GİRİŞ DEĞERLERİ'],
-            ['Aktarım Tarihi', new Date().toLocaleString('tr-TR')],
-            [],
-            ['GENEL PARAMETRELER', 'Değer'],
-            ['Hedeflenen Net Kâr (€)', num('targetNetProfit')],
-            ['Ortalama Oda Başına Misafir Sayısı', num('avgGuests')],
-            ['Personel Başına Aylık Giydirilmiş Maliyet (€)', num('staffCost')],
-            ['Otel Konsepti', selText('concept')],
-            ['Kişibaşı Günlük Ekstra Harcama (€)', num('extraSpend')],
-            ['Sabit Gider ve Amortisman Dönemi', selText('expenseMode')],
-            ['Kişibaşı Günlük F&B Hammadde Maliyeti (€)', num('fbCostPerPerson')],
-            ['Sezonluk Elektrik Gideri (Toplam - €)', num('elecCost')],
-            ['Sezonluk Su Gideri (Toplam - €)', num('waterCost')],
-            ['Sezonluk LNG / Doğalgaz Gideri (Toplam - €)', num('lngCost')],
-            ['Elektrik + Su + LNG Ort. Gerçekleşen Oda Gecesi Başı (€) (Otomatik)', round2(r.utilityPerNight)],
-            ['Aylık Sabit Genel Giderler (€)', num('fixedCost')],
-            ['Toplam Yatırım Değeri (€)', num('totalInvestment')],
-            ['Yıllık Amortisman / Eskime Payı Oranı (%)', num('depreciationRate')],
-            ['Kurumlar Vergisi Oranı (%)', num('taxRate')],
-            [],
-            ['ODA TİPLERİ', 'Oda Sayısı'],
-            ...roomTypes.map(rt => [rt.name, rt.count || 0]),
-            ['Toplam Oda Sayısı', roomTypes.reduce((s, rt) => s + (rt.count || 0), 0)],
-            [],
-            ['KİRA VE DİĞER YILLIK GELİRLER', 'Yıllık Tutar (€)'],
-            ...rentals.map(rn => [rn.name, rn.amount || 0]),
-            ['Toplam Kira Geliri', rentals.reduce((s, rn) => s + (rn.amount || 0), 0)],
-            [],
-            ['SEZONLAR'],
-            ['Başlangıç', 'Bitiş', 'Gün', 'Doluluk (%)', 'ADR (€)', 'Personel Sayısı'],
-            ...seasons.map(s => [
-                s.startDate, s.endDate,
-                calculateDaysBetween(s.startDate, s.endDate),
-                s.occupancy, s.adr, s.staffCount
-            ])
-        ];
-
-        // Sayfa 2: Tüm sonuç değerleri
-        const results = [
-            ['SEZONLUK FİNANSAL ÖZET VE HEDEF ANALİZİ', 'Değer'],
-            ['Toplam Oda Sayısı', r.rooms || 0],
-            ['Toplam Satılabilir Oda Geceleme', r.totalPossibleNights || 0],
-            ['Gerçekleşen Konaklayan Geceleme (Doluluk ile)', r.occupiedNights || 0],
-            ['Ortalama Doluluk (%)', round2(r.avgOccupancy)],
-            ['Toplam Misafir Sayısı (Tahmini)', r.totalGuests || 0],
-            ['Toplam Oda Geliri (€)', round2(r.roomRevenue)],
-            ['Toplam Ekstra Gelirler (€)', round2(r.extraRevenue)],
-            ['Kira ve Diğer Yıllık Gelirler (€)', round2(r.rentalRevenue)],
-            ['Toplam Brüt Ciro (€)', round2(r.totalRevenue)],
-            ['Toplam Personel Maliyeti (€)', round2(r.totalStaffExpense)],
-            ['Toplam Yiyecek & İçecek (F&B) Maliyeti (€)', round2(r.totalFbExpense)],
-            ['Sezonluk Elektrik Gideri (€)', round2(r.elecCost)],
-            ['Sezonluk Su Gideri (€)', round2(r.waterCost)],
-            ['Sezonluk LNG / Doğalgaz Gideri (€)', round2(r.lngCost)],
-            ['Elektrik + Su + LNG Ort. Gerçekleşen Oda Gecesi Başı (€)', round2(r.utilityPerNight)],
-            ['Toplam Sabit Giderler (€)', round2(r.totalFixedExpense)],
-            ['Amortisman (Eskime Payı) Gideri (€)', round2(r.seasonDepreciationExpense)],
-            ['Toplam İşletme Maliyeti (€)', round2(r.totalExpense)],
-            ['Vergi Öncesi Kâr / (Zarar) (€)', round2(r.preTaxProfit)],
-            ['Kurumlar Vergisi Tutarı (€)', round2(r.taxAmount)],
-            ['Sezon Sonu Net Kâr / (Zarar) (€)', round2(r.netProfit)],
-            ['Hedef Kâr İçin Gereken Ort. Oda Fiyatı (ADR) (€)', round2(r.requiredAdr)],
-            ['Başabaş Doluluk Oranı (%)', round2(r.breakevenOcc)]
-        ];
-
-        const wb = XLSX.utils.book_new();
-        const wsInputs = XLSX.utils.aoa_to_sheet(inputs);
-        const wsResults = XLSX.utils.aoa_to_sheet(results);
-        applyNumberMasks(wsInputs);
-        applyNumberMasks(wsResults);
-        XLSX.utils.book_append_sheet(wb, wsInputs, 'Girişler');
-        XLSX.utils.book_append_sheet(wb, wsResults, 'Sonuçlar');
-
-        const d = new Date();
-        const pad = n => String(n).padStart(2, '0');
-        const fname = `Otel-Butce-${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}.xlsx`;
-        XLSX.writeFile(wb, fname);
     }
 
-    // ============ N8N WEBHOOK ENTEGRASYONU ============
-    const N8N_WEBHOOK_URL = 'https://n8n.yapay-zeka-chatbot.com/webhook/9d947b48-a1d5-4c8c-bf70-f18e7e632139';
-    let savedCalculationsCache = [];
+    async function doLogin() {
+        const input = document.getElementById('loginPassword');
+        const sifre = input.value.trim();
+        const errorEl = document.getElementById('loginError');
+        if (!sifre) { errorEl.textContent = 'Şifre girin'; return; }
 
+        try {
+            const res = await fetch(`${API_BASE}/api/giris`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ sifre })
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.hata || 'Giriş başarısız');
+            authToken = data.token;
+            currentUser = data.kullanici;
+            document.getElementById('loginModal').classList.add('hidden');
+            input.value = '';
+            errorEl.textContent = '';
+            await refreshSavedList();
+        } catch (e) {
+            errorEl.textContent = e.message;
+        }
+    }
+
+    function logout() {
+        authToken = null;
+        currentUser = null;
+        savedCalculationsCache = [];
+        document.getElementById('loginModal').classList.remove('hidden');
+        renderSavedList();
+    }
+
+    // ============ KAYITLAR ============
     async function saveCalculation() {
+        if (!authToken) { document.getElementById('loginModal').classList.remove('hidden'); return; }
         try {
             const name = prompt("Bu hesaplamaya bir isim verin:", "Hesaplama - " + new Date().toLocaleString('tr-TR'));
             if (!name) return;
@@ -833,99 +964,47 @@
                 }
             };
 
-            const response = await fetch(N8N_WEBHOOK_URL, {
+            const res = await fetch(`${API_BASE}/api/kaydet`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(state)
+                headers: getAuthHeaders(),
+                body: JSON.stringify({ isim: name, veri: state })
             });
 
-            if (!response.ok) throw new Error('Sunucu hatası: ' + response.status);
+            if (!res.ok) {
+                const err = await res.json();
+                throw new Error(err.hata || 'Sunucu hatası: ' + res.status);
+            }
 
             alert(`✅ "${name}" başarıyla kaydedildi!`);
             await refreshSavedList();
         } catch (e) {
             console.error('[ERROR] saveCalculation:', e);
-            alert('❌ Kayıt sırasında hata oluştu: ' + e.message);
+            alert('❌ Kayıt sırasında hata: ' + e.message);
         }
     }
 
     async function refreshSavedList() {
         const container = document.getElementById('saved-list');
+        if (!authToken) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <p>🔐 Kayıtları görmek için giriş yapın.</p>
+                    <button class="btn-save" onclick="document.getElementById('loginModal').classList.remove('hidden')" style="margin-top:10px;">Giriş Yap</button>
+                </div>`;
+            return;
+        }
         container.innerHTML = `<div class="empty-state"><p>⏳ Kayıtlar yükleniyor...</p></div>`;
         try {
-            const response = await fetch(N8N_WEBHOOK_URL, { method: 'GET' });
-            if (!response.ok) throw new Error('Sunucu hatası: ' + response.status);
+            const res = await fetch(`${API_BASE}/api/liste`, { headers: getAuthHeaders() });
+            if (!res.ok) throw new Error('Sunucu hatası: ' + res.status);
+            const rows = await res.json();
 
-            const text = await response.text();
-            console.log('=== [DEBUG] n8n ham cevap (text) ===');
-            console.log(text);
-
-            let rows = [];
-            if (text && text.trim().length > 0) {
-                try {
-                    const parsed = JSON.parse(text);
-                    rows = Array.isArray(parsed) ? parsed : (parsed.data ? parsed.data : [parsed]);
-                } catch(e) {
-                    console.warn('[WARN] JSON parse hatası:', e, text);
-                    rows = [];
-                }
-            }
-
-            console.log('=== [DEBUG] rows.length ===', rows.length);
-            console.log('=== [DEBUG] rows[0] ===', JSON.stringify(rows[0], null, 2));
-
-            savedCalculationsCache = rows.map((row, index) => {
-                console.log(`\n=== [DEBUG MAP #${index}] BAŞLANGIÇ ===`);
-                console.log('[DEBUG MAP] row:', row);
-                console.log('[DEBUG MAP] row.json var mı?:', !!row.json);
-
-                const actualRow = row.json || row;
-                console.log('[DEBUG MAP] actualRow:', actualRow);
-                console.log('[DEBUG MAP] actualRow keys:', Object.keys(actualRow || {}));
-
-                const rawData = actualRow.veri || actualRow['Veri'] || actualRow['veri (JSON)'] || actualRow.veri_json;
-                const rawName = actualRow.isim || actualRow['isim'] || actualRow['isim '] || actualRow.Isim || 'İsimsiz Kayıt';
-                const rawDate = actualRow.tarih || actualRow['Tarih'] || new Date().toISOString();
-
-                console.log('[DEBUG MAP] rawData:', rawData);
-                console.log('[DEBUG MAP] rawData typeof:', typeof rawData);
-                console.log('[DEBUG MAP] rawName:', rawName);
-                console.log('[DEBUG MAP] rawDate:', rawDate);
-
-                let parsedData = {};
-                try {
-                    if (typeof rawData === 'string') {
-                        parsedData = JSON.parse(rawData);
-                        console.log('[DEBUG MAP] JSON.parse BAŞARILI');
-                    } else if (rawData && typeof rawData === 'object') {
-                        parsedData = rawData;
-                        console.log('[DEBUG MAP] rawData zaten obje');
-                    } else {
-                        console.log('[DEBUG MAP] rawData boş/undefined');
-                    }
-                } catch(e) {
-                    console.error('[DEBUG MAP] PARSE HATASI:', e);
-                    console.error('[DEBUG MAP] Hatalı rawData:', rawData);
-                }
-
-                console.log('[DEBUG MAP] parsedData:', parsedData);
-                console.log('[DEBUG MAP] parsedData keys sayısı:', Object.keys(parsedData).length);
-
-                return {
-                    id: index,
-                    name: rawName,
-                    savedAt: rawDate,
-                    data: parsedData
-                };
-            }).filter(item => {
-                const pass = item.data && Object.keys(item.data).length > 0;
-                console.log('[DEBUG FILTER] item.name:', item.name, '| data keys:', Object.keys(item.data).length, '| PASS:', pass);
-                return pass;
-            });
-
-            console.log('\n=== [DEBUG] SONUÇ ===');
-            console.log('İşlenmiş kayıt sayısı:', savedCalculationsCache.length);
-            console.log('İşlenmiş kayıtlar:', savedCalculationsCache);
+            savedCalculationsCache = rows.map((row, index) => ({
+                id: row.id,
+                name: row.isim,
+                savedAt: row.tarih,
+                data: row.veri
+            })).filter(item => item.data && Object.keys(item.data).length > 0);
 
             renderSavedList();
         } catch (e) {
@@ -961,20 +1040,21 @@
                 const dateObj = new Date(item.savedAt);
                 dateStr = dateObj.toLocaleDateString('tr-TR') + ' ' + dateObj.toLocaleTimeString('tr-TR', {hour: '2-digit', minute: '2-digit'});
             } catch(e) { dateStr = item.savedAt; }
-            
+
             div.innerHTML = `
                 <div class="saved-info">
                     <span class="saved-name">${item.name}</span>
                     <span class="saved-date">${dateStr}</span>
                 </div>
-                <button class="btn-load" onclick="loadCalculation(${item.id})">Yükle</button>
-                <button class="btn-del" onclick="deleteCalculation(${item.id})">Sil</button>
+                <button class="btn-load" onclick="loadCalculation(${item.id})" aria-label="${item.name} hesaplamasını yükle">Yükle</button>
+                <button class="btn-del" onclick="deleteCalculation(${item.id})" aria-label="${item.name} hesaplamasını sil">Sil</button>
             `;
             container.appendChild(div);
         });
     }
 
     async function loadCalculation(id) {
+        if (!authToken) { document.getElementById('loginModal').classList.remove('hidden'); return; }
         const item = savedCalculationsCache.find(s => s.id === id);
         if (!item) { alert('Kayıt bulunamadı!'); return; }
         if (!confirm(`"${item.name}" hesaplaması yüklenecek. Mevcut veriler değişecek. Devam edilsin mi?`)) return;
@@ -1012,17 +1092,29 @@
             alert(`✅ "${item.name}" başarıyla yüklendi!`);
         } catch(e) {
             console.error('[ERROR] loadCalculation:', e);
-            alert('❌ Yükleme sırasında hata oluştu: ' + e.message);
+            alert('❌ Yükleme sırasında hata: ' + e.message);
         }
     }
 
-    function deleteCalculation(id) {
+    async function deleteCalculation(id) {
+        if (!authToken) { document.getElementById('loginModal').classList.remove('hidden'); return; }
         const item = savedCalculationsCache.find(s => s.id === id);
         if (!item) return;
-        if (!confirm(`"${item.name}" listeden gizlenecek.\n\nNOT: Google Sheets'teki kaydı kalıcı silmek için Sheets dosyasını elle açıp satırı silmen gerekir. Devam edilsin mi?`)) return;
+        if (!confirm(`"${item.name}" silinecek. Bu işlem geri alınamaz. Devam edilsin mi?`)) return;
 
-        savedCalculationsCache = savedCalculationsCache.filter(s => s.id !== id);
-        renderSavedList();
+        try {
+            const res = await fetch(`${API_BASE}/api/sil`, {
+                method: 'POST',
+                headers: getAuthHeaders(),
+                body: JSON.stringify({ id })
+            });
+            if (!res.ok) throw new Error('Silme başarısız');
+            savedCalculationsCache = savedCalculationsCache.filter(s => s.id !== id);
+            renderSavedList();
+        } catch (e) {
+            console.error('[ERROR] deleteCalculation:', e);
+            alert('❌ Silme hatası: ' + e.message);
+        }
     }
 
     // ============ BAŞLANGIÇ ============
@@ -1034,6 +1126,5 @@
         refreshSavedList();
     };
 </script>
-
 </body>
 </html>
